@@ -21,3 +21,9 @@ APK：`CalorieWidget/app/build/outputs/apk/debug/app-debug.apk`。
 隐私检查：`python3 scripts/audit_privacy.py --allow-configured-commit-email` 检查当前提交，追加 `--history` 检查可达历史；需先在仓库本地 Git 配置中设置维护者允许公开的 `user.email`。[隐私验收说明](CalorieWidget/docs/ACCEPTANCE_PRIVACY_20261123.md)区分当前文件清理与历史记录清理。
 
 按项目维护者的验收要求，GitHub 用户名、仓库链接和提交作者/提交者字段中的原真实邮箱允许公开；其余邮箱、本机路径、主机名和设备标识继续检查。
+
+## 2.0 外观更新
+
+App 与常规/紧凑桌面小部件采用统一的暖灰、深青绿配色、数字层级、圆角描边和浅深色样式。仅更新视觉资源与应用版本（2.0 / versionCode 3），既有文案、功能、当天明细及历史只读规则保持不变。
+
+[2.0 视觉验收与独立审计](CalorieWidget/docs/ACCEPTANCE_VISUAL_2_0.md)。设计 skill 的下载文件、工具和原始截图仅保存在已忽略的 `.tools/` 或构建目录，不进入仓库。

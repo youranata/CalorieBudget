@@ -1,27 +1,27 @@
-<?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="match_parent">
+<?xml version='1.0' encoding='utf-8'?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="match_parent" android:background="@color/surface">
     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="20dp">
-        <TextView android:id="@+id/title" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/add_record" android:textSize="24sp" android:textStyle="bold" />
-        <com.google.android.material.textfield.TextInputLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="20dp" android:hint="@string/activity_input_hint_1">
-            <com.google.android.material.textfield.TextInputEditText android:id="@+id/amount_input" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="numberDecimal" android:maxLength="14" />
+        <TextView android:id="@+id/title" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/add_record" android:textSize="24sp" android:textStyle="bold" android:fontFamily="sans-serif-medium" android:textColor="@color/text_primary" style="@style/TextAppearance.Calorie.Title" />
+        <com.google.android.material.textfield.TextInputLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="20dp" android:hint="@string/activity_input_hint_1" style="@style/Widget.Calorie.TextField">
+            <com.google.android.material.textfield.TextInputEditText android:id="@+id/amount_input" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="numberDecimal" android:maxLength="14" android:textSize="16sp" android:paddingStart="16dp" android:paddingEnd="16dp" android:paddingTop="16dp" android:paddingBottom="16dp" />
         </com.google.android.material.textfield.TextInputLayout>
-        <RadioGroup android:id="@+id/unit_group" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
-            <RadioButton android:id="@+id/unit_kcal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:checked="true" android:text="@string/activity_input_text_2" />
-            <RadioButton android:id="@+id/unit_kj" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/activity_input_text_3" />
+        <RadioGroup android:id="@+id/unit_group" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginTop="12dp" android:layout_marginBottom="12dp" android:padding="4dp" android:background="@drawable/card_background">
+            <RadioButton android:id="@+id/unit_kcal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:checked="true" android:text="@string/activity_input_text_2" android:minHeight="48dp" android:paddingStart="12dp" android:paddingEnd="20dp" android:textSize="16sp" android:textColor="@color/text_primary" />
+            <RadioButton android:id="@+id/unit_kj" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/activity_input_text_3" android:minHeight="48dp" android:paddingStart="12dp" android:paddingEnd="20dp" android:textSize="16sp" android:textColor="@color/text_primary" />
         </RadioGroup>
-        <com.google.android.material.textfield.TextInputLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="@string/activity_input_hint_4">
-            <com.google.android.material.textfield.TextInputEditText android:id="@+id/note_input" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="textCapSentences|textMultiLine" android:maxLength="500" />
+        <com.google.android.material.textfield.TextInputLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="@string/activity_input_hint_4" style="@style/Widget.Calorie.TextField">
+            <com.google.android.material.textfield.TextInputEditText android:id="@+id/note_input" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="textCapSentences|textMultiLine" android:maxLength="500" android:textSize="16sp" android:paddingStart="16dp" android:paddingEnd="16dp" android:paddingTop="16dp" android:paddingBottom="16dp" />
         </com.google.android.material.textfield.TextInputLayout>
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="20dp" android:text="@string/activity_input_text_5" android:textStyle="bold" />
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="20dp" android:text="@string/activity_input_text_5" android:textStyle="bold" android:fontFamily="sans-serif" android:textColor="@color/text_primary" />
         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
-            <Button android:id="@+id/date_button" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/activity_input_text_6" />
-            <Button android:id="@+id/time_button" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/activity_input_text_7" />
+            <Button android:id="@+id/date_button" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/activity_input_text_6" style="@style/Widget.Calorie.Button.Secondary" android:layout_marginEnd="4dp" />
+            <Button android:id="@+id/time_button" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/activity_input_text_7" style="@style/Widget.Calorie.Button.Secondary" android:layout_marginStart="4dp" />
         </LinearLayout>
-        <TextView android:id="@+id/timezone_text" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="@color/text_secondary" android:textSize="12sp" />
-        <TextView android:id="@+id/form_error" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="@color/calorie_warning" android:accessibilityLiveRegion="polite" />
+        <TextView android:id="@+id/timezone_text" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="@color/text_secondary" android:textSize="12sp" android:fontFamily="sans-serif" android:layout_marginTop="8dp" android:lineSpacingExtra="4dp" />
+        <TextView android:id="@+id/form_error" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="@color/calorie_warning" android:accessibilityLiveRegion="polite" android:fontFamily="sans-serif" android:layout_marginTop="8dp" android:lineSpacingExtra="4dp" />
         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginTop="20dp">
-            <Button android:id="@+id/cancel_button" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/cancel" />
-            <Button android:id="@+id/save_button" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/save" />
+            <Button android:id="@+id/cancel_button" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/cancel" style="@style/Widget.Calorie.Button.Secondary" android:layout_marginEnd="4dp" />
+            <Button android:id="@+id/save_button" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/save" style="@style/Widget.Calorie.Button" android:layout_marginStart="4dp" />
         </LinearLayout>
     </LinearLayout>
 </ScrollView>

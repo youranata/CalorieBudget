@@ -1,0 +1,60 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <style name="Widget.Calorie.Button" parent="Widget.Material3.Button">
+        <item name="android:minHeight">52dp</item>
+        <item name="android:insetTop">2dp</item>
+        <item name="android:insetBottom">2dp</item>
+        <item name="android:paddingStart">12dp</item>
+        <item name="android:paddingEnd">12dp</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:letterSpacing">0.01</item>
+        <item name="cornerRadius">16dp</item>
+        <item name="backgroundTint">@color/button_primary_tint</item>
+        <item name="android:textColor">@color/on_primary</item>
+        <item name="rippleColor">@color/ripple</item>
+    </style>
+    <style name="Widget.Calorie.Button.Secondary" parent="Widget.Calorie.Button">
+        <item name="backgroundTint">@color/button_secondary_tint</item>
+        <item name="android:textColor">@color/calorie_primary</item>
+        <item name="strokeColor">@color/outline</item>
+        <item name="strokeWidth">1dp</item>
+    </style>
+    <style name="Widget.Calorie.Button.Quiet" parent="Widget.Material3.Button.TextButton">
+        <item name="android:minHeight">48dp</item>
+        <item name="android:minWidth">48dp</item>
+        <item name="android:paddingStart">12dp</item>
+        <item name="android:paddingEnd">12dp</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textColor">@color/calorie_primary</item>
+        <item name="cornerRadius">14dp</item>
+        <item name="rippleColor">@color/ripple</item>
+    </style>
+    <style name="Widget.Calorie.Button.Range" parent="Widget.Calorie.Button.Secondary">
+        <item name="android:minWidth">0dp</item>
+        <item name="android:paddingStart">4dp</item>
+        <item name="android:paddingEnd">4dp</item>
+        <item name="android:textSize">13sp</item>
+        <item name="cornerRadius">12dp</item>
+    </style>
+    <style name="Widget.Calorie.TextField" parent="Widget.Material3.TextInputLayout.OutlinedBox">
+        <item name="boxBackgroundColor">@color/card</item>
+        <item name="boxStrokeColor">@color/calorie_primary</item>
+        <item name="boxCornerRadiusTopStart">16dp</item>
+        <item name="boxCornerRadiusTopEnd">16dp</item>
+        <item name="boxCornerRadiusBottomStart">16dp</item>
+        <item name="boxCornerRadiusBottomEnd">16dp</item>
+        <item name="hintTextColor">@color/text_secondary</item>
+    </style>
+    <style name="TextAppearance.Calorie.Title" parent="TextAppearance.Material3.HeadlineSmall">
+        <item name="android:textSize">24sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textColor">@color/text_primary</item>
+    </style>
+    <style name="ShapeAppearance.Calorie" parent="ShapeAppearance.Material3.Corner.Medium">
+        <item name="cornerSize">20dp</item>
+    </style>
+</resources>
