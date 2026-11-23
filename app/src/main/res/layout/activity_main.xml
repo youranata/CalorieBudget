@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="match_parent" android:fillViewport="true">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="20dp">
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="今日热量" android:textColor="@color/text_secondary" android:textSize="16sp" />
+        <TextView android:id="@+id/remaining" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:text="2000" android:textSize="48sp" android:textStyle="bold" />
+        <TextView android:id="@+id/remaining_kj" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="约 8368 kJ" android:textColor="@color/text_secondary" android:textSize="14sp" />
+        <TextView android:id="@+id/consumed" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:text="已摄入 0 kcal" android:textSize="16sp" />
+        <TextView android:id="@+id/budget" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="每日预算 2000 kcal" android:textColor="@color/text_secondary" android:textSize="14sp" />
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginTop="16dp">
+            <Button android:id="@+id/add_record_button" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="新增记录" />
+            <Button android:id="@+id/budget_button" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="设置预算" />
+        </LinearLayout>
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+            <Button android:id="@+id/history_button" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="历史记录" />
+            <Button android:id="@+id/stats_button" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="统计图表" />
+        </LinearLayout>
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="20dp" android:text="今日记录" android:textSize="20sp" android:textStyle="bold" />
+        <TextView android:id="@+id/empty_text" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="20dp" android:text="今天还没有记录" android:textColor="@color/text_secondary" />
+        <LinearLayout android:id="@+id/records_container" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" />
+    </LinearLayout>
+</ScrollView>

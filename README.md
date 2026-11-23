@@ -1,266 +1,87 @@
-# CalorieBudget
+# CalorieWidget
 
-一个简洁、轻量的 Android 热量预算管理工具，支持通过桌面小部件快速记录每日热量摄入，并实时查看剩余热量预算。
+CalorieWidget 是一个以 Android 桌面小部件为主要入口的本地热量预算应用。它用固定精度的 milli-kcal 保存数据，支持 kcal/kJ 输入、来源备注、每日预算快照、记录增删改、历史查询和 Canvas 统计图表。应用不请求网络权限，不需要账号或食物数据库。
 
-项目主要关注日常使用中的记录效率和数据管理，希望以尽可能少的操作完成热量记录，并通过历史数据了解长期摄入情况。
+## 已实现功能
 
-> **项目状态：开发中**
+- 默认每日预算 2000 kcal，可在 App 中修改；每个日期单独保存预算快照。
+- kcal 与 kJ 共用同一个余额：`1 kcal = 4.184 kJ`。
+- 每次摄入都保存为独立 Room 记录：原始数值、原始单位、统一 milli-kcal、备注、时间戳和本地日期。
+- 允许 0 kcal 记录以区分“有记录但总量为零”和“没有记录”；拒绝负数及超出固定精度范围的输入。
+- App 内可新增、编辑（包括日期和时间）、删除任意历史记录；跨日期编辑会重新归属日期。
+- 4×2 以上尺寸的小部件：查看剩余 kcal/kJ、已摄入/预算，并从 kcal、kJ 或“记录”入口打开统一新增页面。
+- 每日零点采用“每次读取/写入时日期校验 + AlarmManager”双重机制；设备重启、日期/时区改变后重新安排任务。没有精确闹钟权限时自动使用非精确的 idle alarm。
+- 历史页按有记录的日期展示预算、摄入、剩余和记录数；统计页支持 7/30/90 天和全部历史，缺失日期不会被伪造为 0 kcal。
 
-## Features
+## 打开项目
 
-### Daily Calorie Budget
+1. 用 Android Studio Hedgehog (2023.1.1) 或更新版本打开本目录 `CalorieBudget`。
+2. Android Studio 使用 JDK 17（Gradle/AGP 也支持当前的 JDK 21）。
+3. 配置 Android SDK Platform 35 和 Build Tools 35.0.0，等待 Gradle Sync 完成。
+4. 最低支持 Android 8.0（API 26），目标 API 35。
 
-- 支持自定义每日热量预算。
-- 默认每日预算为 2000 kcal。
-- 实时计算并显示当日剩余热量。
-- 超出预算后允许剩余热量显示为负数。
-- 同时支持 kcal 和 kJ 两种热量单位。
+命令行构建前，如果 SDK 不在默认位置，在项目根目录创建 `local.properties`，例如：
 
-单位换算：
-
-- 1 kcal = 4.184 kJ
-- 1 kJ ≈ 0.239 kcal
-
-### Quick Intake Recording
-
-支持通过两种单位记录热量：
-
-- **kcal**：直接输入千卡数值。
-- **kJ**：输入千焦数值，自动换算为 kcal。
-
-每条摄入记录包含：
-
-- 热量数值。
-- 原始输入数值及单位。
-- 食物或摄入来源备注。
-- 记录时间。
-- 所属日期。
-
-所有记录统一换算后参与每日热量统计。
-
-### Home Screen Widget
-
-提供 Android 桌面小部件，方便用户快速查看和记录热量。
-
-主要功能：
-
-- 显示当日剩余热量。
-- 显示每日预算和已摄入热量。
-- 提供 kcal 和 kJ 两种快速录入入口。
-- 支持填写摄入来源备注。
-- 记录完成后自动刷新小部件。
-
-界面以剩余热量为核心，尽量减少不必要的信息和操作。
-
-### History & Statistics
-
-完整应用支持查看和管理历史摄入数据。
-
-计划提供：
-
-- 按日期查看摄入记录。
-- 新增、编辑和删除记录。
-- 查看每日总摄入热量。
-- 对比每日摄入量与预算。
-- 查看一段时间内的热量变化趋势。
-- 统计每日平均摄入量及预算达成情况。
-
-历史记录独立保存，不会因为日期切换而丢失。
-
-### Daily Reset
-
-- 每天按照设备本地时间零点切换至新的一天。
-- 新的一天重新计算剩余热量。
-- 历史摄入记录永久保留。
-- 使用日期校验和系统定时任务共同保障日期切换的正确性。
-- 考虑设备重启及系统时区变化等情况。
-
-## Technical Stack
-
-| Technology | Purpose |
-|---|---|
-| Kotlin | Main programming language |
-| Android SDK | Android application development |
-| XML Layout | UI layout |
-| AppWidget / RemoteViews | Home screen widget |
-| Room | Local database |
-| Kotlin Coroutines | Asynchronous operations |
-| AlarmManager | Scheduled tasks and daily refresh |
-| Canvas / Chart Library | Historical data visualization |
-| Gradle Kotlin DSL | Build configuration |
-
-## Data Design
-
-项目使用 Room 实现本地数据持久化，主要包含每日预算和摄入记录。
-
-### Daily Budget
-
-每日预算与日期关联保存。
-
-修改当前日期的预算不会影响历史日期已经保存的预算。
-
-### Intake Records
-
-每次摄入作为一条独立记录保存，包含：
-
-- 原始输入数值。
-- 原始输入单位。
-- 统一换算后的热量数值。
-- 来源备注。
-- 时间戳。
-- 所属日期。
-
-### Calorie Calculation
-
-每日剩余热量按照以下规则计算：
-
-**剩余热量 = 每日预算 - 当日所有有效摄入记录的热量总和**
-
-例如：
-
-| Item | Value |
-|---|---:|
-| Daily Budget | 2000 kcal |
-| Intake 1 | 500 kcal |
-| Intake 2 | 650 kcal |
-| Intake 3 | 350 kcal |
-| Total Intake | 1500 kcal |
-| Remaining | 500 kcal |
-
-如果累计摄入超过预算，剩余热量可以为负数。
-
-热量计算采用固定精度数值，尽量避免浮点数运算带来的累计误差。
-
-## Privacy
-
-- 数据默认保存在设备本地。
-- 无需注册账号。
-- 无需联网即可使用。
-- 不依赖云端服务。
-- 不主动上传个人摄入记录。
-
-## Project Structure
-
-项目采用模块化组织方式，主要职责划分如下：
-
-```text
-CalorieBudget/
-├── app/
-│   ├── src/main/
-│   │   ├── java/.../
-│   │   │   ├── MainActivity.kt
-│   │   │   ├── InputActivity.kt
-│   │   │   ├── data/
-│   │   │   │   ├── entity/
-│   │   │   │   ├── dao/
-│   │   │   │   └── AppDatabase.kt
-│   │   │   ├── repository/
-│   │   │   ├── widget/
-│   │   │   │   └── WidgetProvider.kt
-│   │   │   ├── receiver/
-│   │   │   │   └── ResetReceiver.kt
-│   │   │   └── utils/
-│   │   ├── res/
-│   │   │   ├── layout/
-│   │   │   ├── drawable/
-│   │   │   ├── values/
-│   │   │   └── xml/
-│   │   └── AndroidManifest.xml
-│   └── build.gradle.kts
-├── gradle/
-├── build.gradle.kts
-├── settings.gradle.kts
-├── gradle.properties
-├── .gitignore
-└── README.md
+```properties
+sdk.dir=<ANDROID_SDK>
 ```
 
-以上为预期的模块组织结构，实际目录可能随开发进度调整。
+`local.properties` 已在 `.gitignore` 中忽略，不应提交。
 
-## Requirements
+## 构建和测试
 
-- Android Studio
-- JDK 17（以项目 Gradle 配置为准）
-- Android SDK
-- Android 8.0（API 26）及以上设备
-
-## Build & Run
-
-### 1. Clone the Repository
+Linux/macOS：
 
 ```bash
-git clone git@github.com:youranata/CalorieBudget.git
-cd CalorieBudget
-```
-
-也可以使用 HTTPS：
-
-```bash
-git clone https://github.com/youranata/CalorieBudget.git
-```
-
-### 2. Open in Android Studio
-
-使用 Android Studio 打开项目根目录，等待 Gradle Sync 完成。
-
-### 3. Build Debug APK
-
-Linux / macOS：
-
-```bash
+./gradlew test
 ./gradlew assembleDebug
 ```
 
-Windows：
-
-```powershell
-.\gradlew.bat assembleDebug
-```
-
-生成的 APK 通常位于：
+Debug APK 输出为：
 
 ```text
 app/build/outputs/apk/debug/app-debug.apk
 ```
 
-### 4. Run Tests
-
-```bash
-./gradlew test
-```
-
-### 5. Install on Android Device
-
-连接开启 USB 调试的 Android 设备：
+通过 ADB 安装：
 
 ```bash
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
-安装完成后，在手机桌面长按空白区域，进入小部件选择界面，添加 CalorieBudget Widget。
+本项目包含固定精度换算、负数/超大输入和本地日期归属的 JVM 单元测试。没有连接 Android 设备时，无法在本机验证具体厂商桌面小部件渲染；源码构建与单元测试应以命令输出为准。
 
-## Development Roadmap
+## 在小米 HyperOS 添加小部件
 
-- [ ] Initialize Android project structure.
-- [ ] Implement Room database.
-- [ ] Implement kcal / kJ conversion.
-- [ ] Implement daily calorie budget and remaining calorie calculation.
-- [ ] Implement intake record creation, editing and deletion.
-- [ ] Implement home screen widget.
-- [ ] Implement quick intake recording.
-- [ ] Implement daily reset and date validation.
-- [ ] Implement history and statistics.
-- [ ] Add dark mode and UI refinements.
-- [ ] Complete unit tests and device compatibility testing.
+安装并首次打开应用后，在桌面长按空白处，选择“小部件/Widgets”，搜索 **CalorieWidget**，拖动到桌面并调整到至少 4×2。HyperOS 可能要求允许应用自启动或关闭电池优化，才能让零点广播更稳定；即使后台任务被延迟，应用和小部件每次读取数据都会重新检查本地日期，不依赖周期性刷新来维持余额正确性。
 
-## Design Principles
+Android 12 及以上若系统允许精确闹钟，应用会使用 `setExactAndAllowWhileIdle`；否则自动降级为 `setAndAllowWhileIdle`。应用声明 `SCHEDULE_EXACT_ALARM`，不会因缺少权限阻止使用。
 
-- **Simplicity**：优先展示剩余热量这一核心信息。
-- **Efficiency**：尽可能减少记录一次摄入所需的操作。
-- **Reliability**：历史数据持久保存，统计结果以实际记录为依据。
-- **Privacy**：本地存储，不依赖账号和云端服务。
-- **Lightweight**：避免不必要的后台任务和复杂功能。
+## 目录结构
 
-## License
+```text
+CalorieBudget/
+├── app/src/main/java/com/youranata/caloriewidget/
+│   ├── data/                 Room 数据库、实体、DAO、事务仓库
+│   ├── domain/               固定精度热量计算和本地日期工具
+│   ├── receiver/             零点、重启、日期/时区变化广播与闹钟调度
+│   ├── widget/               AppWidgetProvider 和 RemoteViews 刷新
+│   ├── MainActivity.kt       今日摘要、记录管理和预算设置
+│   ├── InputActivity.kt      新增/编辑记录
+│   ├── HistoryActivity.kt    按日期历史列表
+│   ├── DayDetailActivity.kt  某天记录详情
+│   ├── StatsActivity.kt      趋势和统计
+│   └── StatsChartView.kt     无第三方依赖的 Canvas 图表
+├── app/src/main/res/         XML 页面、Widget、主题、图标
+├── app/src/test/             JVM 单元测试
+├── app/build.gradle.kts      Android/Kotlin/Room 依赖
+├── build.gradle.kts          顶层插件版本
+├── settings.gradle.kts       Gradle 模块和仓库
+└── gradlew                   Gradle Wrapper 入口
+```
 
-暂未指定开源许可证。项目目前主要用于个人开发和使用。
+## 数据和一致性说明
+
+`IntakeRecordEntity` 是摄入事实数据来源，`DailyBudgetEntity` 只保存日期预算快照。剩余热量始终由“当日预算 - 当日记录总和”计算，不保存一个会与记录脱节的独立余额。新增、编辑、删除和跨日期编辑都在 Room 事务中完成；小部件刷新只读取汇总并更新 RemoteViews，不会写入或重复扣减记录。
+
+当前数据库版本为 1。后续修改实体时应增加 Room migration 并保留用户数据，不要使用 destructive migration。

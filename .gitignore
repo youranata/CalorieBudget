@@ -8,17 +8,18 @@ build/
 *.iml
 local.properties
 captures/
+.externalNativeBuild/
+.cxx/
 
-# Kotlin
+# Kotlin / Java
 *.class
+*.hprof
 
 # APK / AAB
 *.apk
 *.aab
 
-# OS
+# OS and logs
 .DS_Store
 Thumbs.db
-
-# Logs
 *.log
