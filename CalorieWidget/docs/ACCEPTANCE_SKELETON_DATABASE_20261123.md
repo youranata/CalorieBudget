@@ -1,5 +1,6 @@
 # 独立验收：项目骨架与数据库
 
+隐私处理说明：本报告中的机器路径、账号包名和环境指纹已脱敏；历史测试结论保留，显示的命令与模型字段为脱敏版本。原始日志仅保存在被 Git 忽略的本地证据目录。
 验收日期：2026-11-23。被验收源码：`d650def990bf6608176afcfad2694f489aa45322`。
 
 ## 结论
@@ -40,8 +41,8 @@ JDK：JDK 21；Gradle 8.9；AGP 8.7.3；Kotlin 2.0.21；Room 2.6.1。SDK、Gradl
 ./gradlew --no-daemon --console=plain --offline \
   --no-build-cache --no-configuration-cache \
   projects clean :app:assembleDebug :app:testDebugUnitTest \
-  --tests 'com.youranata.caloriewidget.RepositoryTest' \
-  --tests 'com.youranata.caloriewidget.MigrationTest'
+  --tests 'com.example.caloriewidget.RepositoryTest' \
+  --tests 'com.example.caloriewidget.MigrationTest'
 ```
 
 结果：`BUILD SUCCESSFUL in 43s`，51 个任务中 50 个执行、1 个 up-to-date。仍有 Kapt 语言模式回退与测试注解处理参数的非阻断提示。
@@ -57,7 +58,7 @@ projectType=APPLICATION
 agp=8.7.3
 compileTarget=android-35
 buildTools=35.0.0
-applicationId=com.youranata.caloriewidget
+applicationId=com.example.caloriewidget
 minSdk=26
 targetSdk=35
 variants=[debug, release]

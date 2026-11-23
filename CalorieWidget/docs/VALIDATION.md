@@ -1,5 +1,6 @@
 # 验证记录
 
+隐私处理说明：本报告中的机器路径、账号包名和环境指纹已脱敏；历史测试结论保留，显示的命令与模型字段为脱敏版本。原始日志仅保存在被 Git 忽略的本地证据目录。
 验证日期：2026-11-23。工作区：`<WORKSPACE>`；Android Studio 工程：`CalorieWidget/`。工具、缓存、用户配置与临时文件统一保存在工作区 `.tools/` 内，无系统级安装。
 
 ## 实际执行结果
@@ -18,7 +19,7 @@
 - `assembleDebug` 成功生成 `app/build/outputs/apk/debug/app-debug.apk`。
 - `lintDebug` 通过，没有 Error。仍有布局风格、动态文本国际化、紧凑布局字号、依赖版本建议等 Warning，未使用 baseline 或关闭检查来隐藏错误。
 - `apksigner verify --verbose` 通过，APK v2 签名有效，覆盖最低 Android 8.0。
-- `aapt2 dump badging` 确认应用 ID `com.youranata.caloriewidget`，minSdk 26、targetSdk 35，无 `INTERNET` 权限。
+- `aapt2 dump badging` 确认应用 ID `com.example.caloriewidget`，minSdk 26、targetSdk 35，无 `INTERNET` 权限。
 - 全部 XML 通过解析，Gradle 也完成资源与 Manifest 合并。Gradle Wrapper 固定 8.9 并配置官方分发包 SHA-256。
 
 首次扩展测试时 Maven Central 曾出现一次 403，后续重试成功；最终检查没有依赖下载阻断。Kapt 会提示 Kotlin 2.0 语言模式回退到 1.9 进行 stub 生成，该提示不影响上述编译和测试结果。

@@ -1,5 +1,6 @@
 # 独立验收：热量计算与记录管理
 
+隐私处理说明：本报告中的机器路径、账号包名和环境指纹已脱敏；历史测试结论保留，显示的命令与模型字段为脱敏版本。原始日志仅保存在被 Git 忽略的本地证据目录。
 验收日期：2026-11-23。业务源码基线：`83ad0f92818cad00bda6c22abbcf8aebb555d190`。
 
 ## 结论
@@ -63,9 +64,9 @@
 ./gradlew --no-daemon --console=plain --offline \
   --no-build-cache --no-configuration-cache \
   clean :app:assembleDebug :app:testDebugUnitTest \
-  --tests 'com.youranata.caloriewidget.acceptance.*' \
-  --tests 'com.youranata.caloriewidget.CalorieMathTest' \
-  --tests 'com.youranata.caloriewidget.RepositoryTest'
+  --tests 'com.example.caloriewidget.acceptance.*' \
+  --tests 'com.example.caloriewidget.CalorieMathTest' \
+  --tests 'com.example.caloriewidget.RepositoryTest'
 ```
 
 结果：`BUILD SUCCESSFUL in 1m 15s`。
@@ -85,12 +86,12 @@
 
 ```bash
 ./scripts/check.sh :app:testDebugUnitTest \
-  --tests 'com.youranata.caloriewidget.acceptance.*'
+  --tests 'com.example.caloriewidget.acceptance.*'
 ```
 
 ## 证据位置与验证边界
 
-- 测试：[CalorieCalculationAcceptanceTest.kt](../app/src/test/java/com/youranata/caloriewidget/acceptance/CalorieCalculationAcceptanceTest.kt)、[RecordManagementAcceptanceTest.kt](../app/src/test/java/com/youranata/caloriewidget/acceptance/RecordManagementAcceptanceTest.kt)、[RecordManagementUiAcceptanceTest.kt](../app/src/test/java/com/youranata/caloriewidget/acceptance/RecordManagementUiAcceptanceTest.kt)。
+- 测试：[CalorieCalculationAcceptanceTest.kt](../app/src/test/java/com/example/caloriewidget/acceptance/CalorieCalculationAcceptanceTest.kt)、[RecordManagementAcceptanceTest.kt](../app/src/test/java/com/example/caloriewidget/acceptance/RecordManagementAcceptanceTest.kt)、[RecordManagementUiAcceptanceTest.kt](../app/src/test/java/com/example/caloriewidget/acceptance/RecordManagementUiAcceptanceTest.kt)。
 - 原始导出、构建日志、测试 XML、参考结果及源码哈希：`.tools/acceptance/<run-id>/`。
 - APK：`artifacts/CalorieWidget-records-acceptance-debug.apk`（6251422 字节）。SHA-256：`e4509686f513dba13b8ef51065944a5a17320831dddc212f036fce89e24f6c61`。
 

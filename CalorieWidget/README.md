@@ -22,6 +22,8 @@ CalorieWidget 是一个以桌面小部件为主要入口的本地热量预算应
 - Android SDK Build Tools 35.0.0 和 Platform Tools。
 - JDK 17 或 21；在 Gradle JDK 设置中选择对应 JDK。
 
+请在文档、日志或截图中使用 `<WORKSPACE>`、`<ANDROID_SDK>` 等占位符，避免提交本机用户名、绝对路径、主机名和设备标识。
+
 Android Studio 通常自动生成 `local.properties`。命令行也可按实际位置创建：
 
 ```properties
@@ -55,15 +57,16 @@ Windows 使用 `gradlew.bat`。APK 输出：`app/build/outputs/apk/debug/app-deb
 ```bash
 adb devices
 adb install -r app/build/outputs/apk/debug/app-debug.apk
-adb shell am start -n com.youranata.caloriewidget/.MainActivity
+adb shell am start -n com.example.caloriewidget/.MainActivity
 ```
 
-这是 Debug 签名 APK，发布到商店需要另行配置正式签名。当前验证结果与真机验收清单见 [docs/VALIDATION.md](docs/VALIDATION.md)。
+这是 Debug 签名 APK，发布到商店需要另行配置正式签名。应用 ID 使用通用的 `com.example.caloriewidget`；此前使用旧 ID 的开发版本不能直接覆盖安装本版本，旧版本的本地数据库也不会自动迁移到新应用 ID。当前验证结果与真机验收清单见 [docs/VALIDATION.md](docs/VALIDATION.md)。
 
 独立验收报告：
 
 - [项目骨架与 Room 数据库](docs/ACCEPTANCE_SKELETON_DATABASE_20261123.md)：干净源码构建、Android 导入模型和 IDE 验证边界。
 - [热量计算与记录管理](docs/ACCEPTANCE_CALCULATION_RECORDS_20261123.md)：独立换算参考、记录增删改、跨日期计算与输入页交互。
+- [仓库隐私](docs/ACCEPTANCE_PRIVACY_20261123.md)：个人与机器信息扫描、脱敏及历史处理边界。
 
 ## 小米 HyperOS 小部件
 
@@ -103,7 +106,7 @@ CalorieWidget/
 ├── app/schemas/                  Room 版本化 schema
 ├── app/src/main/
 │   ├── AndroidManifest.xml
-│   ├── java/com/youranata/caloriewidget/
+│   ├── java/com/example/caloriewidget/
 │   │   ├── data/                 Entity、DAO、AppDatabase、事务 Repository
 │   │   ├── domain/               热量、日期与统计计算
 │   │   ├── ui/                   共享页面、记录行和保存 ViewModel

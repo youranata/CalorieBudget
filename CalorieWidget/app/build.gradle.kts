@@ -5,12 +5,12 @@ plugins {
 }
 
 android {
-    namespace = "com.youranata.caloriewidget"
+    namespace = "com.example.caloriewidget"
     compileSdk = 35
     buildToolsVersion = "35.0.0"
 
     defaultConfig {
-        applicationId = "com.youranata.caloriewidget"
+        applicationId = "com.example.caloriewidget"
         minSdk = 26
         targetSdk = 35
         versionCode = 1
