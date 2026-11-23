@@ -60,7 +60,10 @@ adb shell am start -n com.youranata.caloriewidget/.MainActivity
 
 这是 Debug 签名 APK，发布到商店需要另行配置正式签名。当前验证结果与真机验收清单见 [docs/VALIDATION.md](docs/VALIDATION.md)。
 
-项目骨架与 Room 数据库另有[独立验收报告](docs/ACCEPTANCE_SKELETON_DATABASE_20261123.md)，包含干净源码构建、Android 导入模型检查及 Android Studio GUI 的未验证边界。
+独立验收报告：
+
+- [项目骨架与 Room 数据库](docs/ACCEPTANCE_SKELETON_DATABASE_20261123.md)：干净源码构建、Android 导入模型和 IDE 验证边界。
+- [热量计算与记录管理](docs/ACCEPTANCE_CALCULATION_RECORDS_20261123.md)：独立换算参考、记录增删改、跨日期计算与输入页交互。
 
 ## 小米 HyperOS 小部件
 
