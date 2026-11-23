@@ -33,10 +33,12 @@ def main():
         return subprocess.check_output(['git', '-C', str(repo), *params])
 
     identifiers = {Path.home().name, getpass.getuser(), socket.gethostname()}
-    for line in git('remote', '-v').decode().splitlines():
-        match = re.search(r'[:/]([^/:\s]+)/[^/\s]+(?:\.git)?\s', line)
-        if match:
-            identifiers.add(match.group(1))
+    for remote in git('remote').decode().splitlines():
+        # Read configured URLs before a user's url.insteadOf transport rewrite.
+        for url in git('config', '--get-all', 'remote.' + remote + '.url').decode().splitlines():
+            match = re.match(r'^(?:https?://github\.com/|ssh://git@github\.com/|git@github\.com:)([^/\s]+)/', url)
+            if match:
+                identifiers.add(match.group(1))
     if args.identifiers_file:
         identifiers.update(json.loads(args.identifiers_file.read_text()))
     identifiers = {v for v in identifiers if len(v) >= 3 and v not in {'root', 'user', 'example'}}
@@ -53,8 +55,8 @@ def main():
     safe_emails = {b'contributors@example.invalid'}
     forbidden_names = {'local.properties', 'adbkey', 'adbkey.pub', 'id_rsa', 'id_ed25519', '.env',
                        'key.properties', 'keystore.properties', 'signing.properties', 'secrets.properties'}
-    forbidden_suffixes = {'.keystore', '.jks', '.p12', '.pfx', '.pem', '.key', '.db', '.sqlite', '.sqlite3', '.apk', '.aab'}
-    ignored_parts = {'.tools', 'artifacts', '.gradle', '.kotlin', '.idea', '.ssh', 'build'}
+    forbidden_suffixes = {'.keystore', '.jks', '.p12', '.pfx', '.pem', '.key', '.db', '.sqlite', '.sqlite3', '.apk', '.aab', '.pyc', '.pyo'}
+    ignored_parts = {'.tools', 'artifacts', '.gradle', '.kotlin', '.idea', '.ssh', 'build', '__pycache__'}
     findings = []
 
     def label(value):
@@ -64,7 +66,15 @@ def main():
 
     def scan(data, location):
         for category, pattern in patterns.items():
-            hits = [m for m in pattern.finditer(data) if category != 'email' or m.group(0) not in safe_emails]
+            hits = []
+            for match in pattern.finditer(data):
+                if category == 'email':
+                    if match.group(0) in safe_emails:
+                        continue
+                    # SSH transport syntax is not a personal contact address.
+                    if match.group(0) == b'git' + b'@github.com' and data[match.end():match.end() + 1] in {b':', b'/'}:
+                        continue
+                hits.append(match)
             if hits:
                 findings.append({'location': label(location), 'category': category, 'count': len(hits)})
         if private_names and private_names.search(data):
