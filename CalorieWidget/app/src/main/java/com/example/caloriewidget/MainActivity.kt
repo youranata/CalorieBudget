@@ -51,6 +51,9 @@ class MainActivity : BaseActivity() {
                     binding.budget.text = "每日预算 ${CalorieMath.milliKcalToDisplay(summary.budgetMilliKcal)} kcal / ${CalorieMath.milliKjToDisplay(summary.budgetMilliKcal)} kJ"
                     binding.remaining.setTextColor(getColor(if (summary.remainingMilliKcal < 0) R.color.calorie_warning else R.color.calorie_primary))
                     binding.emptyText.isVisible = entries.isEmpty()
+                    binding.addRecordButton.isEnabled = !summary.isArchived
+                    binding.budgetButton.isEnabled = !summary.isArchived
+                    binding.emptyText.text = if (summary.isArchived) "该日期已经归档，只能查看。" else getString(R.string.activity_main_text_12)
                     RecordRows.render(this@MainActivity, binding.recordsContainer, entries) { id ->
                         (application as CalorieWidgetApp).appScope.launch { repository.deleteRecord(id); CalorieWidgetProvider.refreshAll(this@MainActivity) }
                     }
@@ -74,7 +77,10 @@ class MainActivity : BaseActivity() {
                     val amount = runCatching { CalorieMath.parseBudget(input.text.toString()) }.getOrElse { input.error = it.message; return@setOnClickListener }
                     dialog.getButton(android.app.AlertDialog.BUTTON_POSITIVE).isEnabled = false
                     (application as CalorieWidgetApp).appScope.launch {
-                        repository.setDefaultBudget(amount); CalorieWidgetProvider.refreshAll(this@MainActivity)
+                        runCatching { repository.setDefaultBudget(amount); CalorieWidgetProvider.refreshAll(this@MainActivity) }
+                            .onFailure { error -> launch(kotlinx.coroutines.Dispatchers.Main) {
+                                Toast.makeText(this@MainActivity, error.message ?: "保存失败", Toast.LENGTH_SHORT).show()
+                            } }
                     }
                     dialog.dismiss()
                 }

@@ -1,6 +1,5 @@
 package com.example.caloriewidget
 
-import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.os.Bundle
 import androidx.activity.viewModels
@@ -21,6 +20,7 @@ class InputActivity : BaseActivity() {
     private var selectedTime = LocalTime.now().withNano(0)
     private var zone = ZoneId.systemDefault()
     private var initialized = false
+    private var recordUnavailable = false
     private var originalTimestamp: Long? = null
     private var originalLocalTime: String? = null
 
@@ -43,7 +43,7 @@ class InputActivity : BaseActivity() {
         } else if (editingId > 0) {
             lifecycleScope.launch {
                 val record = repository.getRecord(editingId)
-                if (record == null) { binding.formError.text = "记录已被删除"; return@launch }
+                if (record == null) { recordUnavailable = true; renderSaveState(model.state.value); return@launch }
                 zone = DateManager.zone(record.zoneId)
                 selectedDate = LocalDate.parse(record.localDate)
                 selectedTime = Instant.ofEpochMilli(record.timestamp).atZone(zone).toLocalTime()
@@ -52,7 +52,7 @@ class InputActivity : BaseActivity() {
                 binding.unitGroup.check(if (record.originalUnit == "kJ") R.id.unit_kj else R.id.unit_kcal)
                 originalTimestamp = record.timestamp
                 originalLocalTime = selectedDate.atTime(selectedTime).toString()
-                initialized = true; renderDateTime(); binding.saveButton.isEnabled = true
+                initialized = true; renderDateTime(); renderSaveState(model.state.value)
             }
         } else {
             intent.getStringExtra(EXTRA_DATE)?.let { selectedDate = LocalDate.parse(it) }
@@ -61,10 +61,7 @@ class InputActivity : BaseActivity() {
             if (intent.getBooleanExtra(EXTRA_FOCUS_NOTE, false)) binding.noteInput.requestFocus() else binding.amountInput.requestFocus()
         }
         renderDateTime(); binding.saveButton.isEnabled = initialized
-        binding.dateButton.setOnClickListener {
-            DatePickerDialog(this, { _, year, month, day -> selectedDate = LocalDate.of(year, month + 1, day); renderDateTime() },
-                selectedDate.year, selectedDate.monthValue - 1, selectedDate.dayOfMonth).show()
-        }
+        binding.dateButton.isEnabled = false
         binding.timeButton.setOnClickListener {
             TimePickerDialog(this, { _, hour, minute -> selectedTime = LocalTime.of(hour, minute); renderDateTime() },
                 selectedTime.hour, selectedTime.minute, true).show()
@@ -74,12 +71,24 @@ class InputActivity : BaseActivity() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 model.state.collect { state ->
-                    binding.saveButton.isEnabled = initialized && state != SaveState.Saving
-                    binding.cancelButton.isEnabled = state != SaveState.Saving
-                    binding.formError.text = if (state is SaveState.Error) state.message else ""
+                    renderSaveState(state)
                     if (state == SaveState.Saved) { setResult(RESULT_OK); finish() }
                 }
             }
+        }
+    }
+    override fun onDateChecked(date: String) {
+        if (::binding.isInitialized) renderSaveState(model.state.value)
+    }
+    private fun renderSaveState(state: SaveState) {
+        val sameDay = selectedDate == DateManager.today()
+        binding.saveButton.isEnabled = initialized && sameDay && state != SaveState.Saving
+        binding.cancelButton.isEnabled = state != SaveState.Saving
+        binding.formError.text = when {
+            state is SaveState.Error -> state.message
+            !sameDay -> "仅可新增或修改当天记录；历史汇总只能查看"
+            recordUnavailable -> "记录已归档或删除"
+            else -> ""
         }
     }
     override fun onSaveInstanceState(outState: Bundle) {
@@ -101,7 +110,7 @@ class InputActivity : BaseActivity() {
         val unit = if (binding.unitGroup.checkedRadioButtonId == R.id.unit_kj) "kJ" else "kcal"
         val parsed = runCatching { CalorieMath.parseAmount(binding.amountInput.text.toString(), unit) }
             .getOrElse { binding.amountInput.error = it.message; return }
-        if (selectedDate > DateManager.today()) { binding.formError.text = "摄入记录日期不能晚于今天"; return }
+        if (selectedDate != DateManager.today()) { binding.formError.text = "仅可新增或修改当天记录；历史汇总只能查看"; return }
         val local = selectedDate.atTime(selectedTime)
         val zoned = local.atZone(zone)
         if (zoned.toLocalDateTime() != local) { binding.formError.text = "此时间在夏令时切换中不存在，请重新选择"; return }

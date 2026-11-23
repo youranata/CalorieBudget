@@ -2,6 +2,8 @@
 
 以桌面小部件为主要入口的离线 Android 热量预算与摄入记录应用。Kotlin、原生 Views/XML、Room、Coroutines、AppWidget/RemoteViews、Canvas 图表，最低 Android 8.0（API 26）。无网络权限、无账号。
 
+当天保留完整明细并支持删改；过往仅保留每日目标和总摄入，归档后只能查看。升级会将已有历史明细汇总后删除，当天记录保留。[变更验收与独立审计](CalorieWidget/docs/ACCEPTANCE_READONLY_HISTORY_20261123.md)。
+
 **[点击下载 APK（Debug）](https://github.com/youranata/CalorieBudget/raw/refs/heads/main/CalorieWidget/downloads/CalorieWidget-debug.apk)** · 支持 Android 8.0 及以上。下载后允许浏览器安装应用即可安装；若仓库为私有，需要先登录有访问权限的 GitHub 账号。
 
 **完整 Android Studio 工程位于 [`CalorieWidget/`](CalorieWidget/README.md)**。请打开该目录，而非仓库外层。详细安装、SDK、构建、HyperOS 小部件和后台设置说明见工程 README。

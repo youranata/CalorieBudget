@@ -32,8 +32,9 @@ class HistoryActivity : BaseActivity() {
                     items.forEach { day ->
                         val row = LayoutInflater.from(this@HistoryActivity).inflate(R.layout.item_day_summary, binding.historyContainer, false)
                         row.findViewById<TextView>(R.id.day_date).text = DateManager.displayDate(day.date)
-                        row.findViewById<TextView>(R.id.day_total).text = if (day.recordCount == 0) "尚无摄入记录" else "摄入 ${CalorieMath.milliKcalToDisplay(day.totalMilliKcal)} kcal"
-                        row.findViewById<TextView>(R.id.day_budget).text = "预算 ${CalorieMath.milliKcalToDisplay(day.budgetMilliKcal)} kcal · ${day.recordCount} 条记录"
+                        row.findViewById<TextView>(R.id.day_total).text = if (!day.hasRecords) "尚无摄入记录" else "摄入 ${CalorieMath.milliKcalToDisplay(day.totalMilliKcal)} kcal"
+                        val detail = if (day.isArchived) "历史汇总 · 只读" else "${day.recordCount} 条记录"
+                        row.findViewById<TextView>(R.id.day_budget).text = "预算 ${CalorieMath.milliKcalToDisplay(day.budgetMilliKcal)} kcal · $detail"
                         row.findViewById<TextView>(R.id.day_remaining).text = "剩余 ${CalorieMath.milliKcalToDisplay(day.remainingMilliKcal)} kcal"
                         row.setOnClickListener { open(day.date) }; binding.historyContainer.addView(row)
                     }

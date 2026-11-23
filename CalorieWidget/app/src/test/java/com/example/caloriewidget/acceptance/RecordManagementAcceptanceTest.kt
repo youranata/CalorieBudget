@@ -25,12 +25,13 @@ import java.util.UUID
 class RecordManagementAcceptanceTest {
     private lateinit var db: AppDatabase
     private lateinit var repo: CalorieRepository
-    private val today get() = DateManager.todayString()
-    private val yesterday get() = DateManager.today().minusDays(1).toString()
+    private var currentDay = DateManager.todayString()
+    private val today get() = currentDay
+    private val yesterday get() = LocalDate.parse(currentDay).minusDays(1).toString()
     private val zone get() = ZoneId.systemDefault().id
     @Before fun setup() {
         db = Room.inMemoryDatabaseBuilder(ApplicationProvider.getApplicationContext(), AppDatabase::class.java).build()
-        repo = CalorieRepository(db)
+        repo = CalorieRepository(db) { currentDay }
     }
     @After fun close() { db.close() }
     private fun time(date: String, hour: Int = 12) = DateManager.timestamp(LocalDate.parse(date), hour, 0)
@@ -80,21 +81,27 @@ class RecordManagementAcceptanceTest {
         edit(id, "1464.4", "kJ"); check(today, 350_000, 1)
     }
 
-    @Test fun movingHistoryBothDirectionsAndDeletingNeverChangesTheOtherDay() = runBlocking {
-        db.budgetDao().upsert(DailyBudgetEntity(yesterday, 1_500_000, 0))
-        val old = add("400", date = yesterday)
-        val oldDrink = add("418.4", "kJ", yesterday)
+    @Test fun historicalTotalsAreFrozenAndCannotBeMovedBackIntoToday() = runBlocking {
+        val actualToday = currentDay
+        currentDay = yesterday
+        val past = currentDay
+        repo.setDefaultBudget(1_500_000)
+        val old = add("400")
+        add("418.4", "kJ")
+        currentDay = actualToday
+        repo.ensureDate()
+        repo.setDefaultBudget(2_000_000)
         val current = add("350")
-        check(yesterday, 500_000, 2, 1_500_000); check(today, 350_000, 1)
-        edit(current, "250", date = yesterday)
-        check(yesterday, 750_000, 3, 1_500_000); check(today, 0, 0)
-        edit(current, "1000", "kJ", today)
-        check(yesterday, 500_000, 2, 1_500_000); check(today, 239_006, 1)
+        val archived = repo.getSummary(past)
+        assertEquals(DaySummary(past, 1_500_000, 500_000, 1_000_000, 0, true, true), archived)
+        assertTrue(runCatching { edit(current, "250", date = past) }.isFailure)
+        assertTrue(runCatching { edit(old, "1000", "kJ", today) }.isFailure)
         repo.deleteRecord(old)
-        check(yesterday, 100_000, 1, 1_500_000); check(today, 239_006, 1)
-        assertNotNull(repo.getRecord(oldDrink))
+        assertEquals(archived, repo.getSummary(past))
+        assertTrue(db.intakeDao().getForDate(past).isEmpty())
+        check(today, 350_000, 1)
         repo.deleteRecord(current)
-        check(yesterday, 100_000, 1, 1_500_000); check(today, 0, 0)
+        assertEquals(archived, repo.getSummary(past)); check(today, 0, 0)
     }
 
     @Test fun zeroOverBudgetAndTimeOnlyEditKeepTotalsAndOrderingCorrect() = runBlocking {
@@ -161,14 +168,14 @@ class RecordManagementAcceptanceTest {
             val repository = CalorieRepository(disk)
             val a = repository.addRecord(CalorieMath.parseAmount("350", "kcal"), "早餐", time(today), "a")
             val b = repository.addRecord(CalorieMath.parseAmount("1000", "kJ"), "饮料", time(today), "b")
-            repository.updateRecord(a, CalorieMath.parseAmount("500", "kcal"), "午餐", time(yesterday), yesterday, zone)
+            repository.updateRecord(a, CalorieMath.parseAmount("500", "kcal"), "午餐", time(today), today, zone)
             repository.deleteRecord(b)
             disk.close()
             disk = Room.databaseBuilder(context, AppDatabase::class.java, name).build()
             val restored = CalorieRepository(disk)
-            assertEquals(500_000L, restored.getSummary(yesterday).totalMilliKcal)
-            assertEquals(1_500_000L, restored.getSummary(yesterday).remainingMilliKcal)
-            assertEquals(0, restored.getSummary(today).recordCount)
+            assertEquals(500_000L, restored.getSummary(today).totalMilliKcal)
+            assertEquals(1_500_000L, restored.getSummary(today).remainingMilliKcal)
+            assertEquals(1, restored.getSummary(today).recordCount)
             assertNull(restored.getRecord(b))
             assertEquals("午餐", restored.getRecord(a)?.note)
         } finally { disk.close(); context.deleteDatabase(name) }
@@ -178,7 +185,7 @@ class RecordManagementAcceptanceTest {
     @Test fun oneHundredTwentyMutationsMatchIndependentRecordLedgerAfterEveryStep() = runBlocking {
         data class Expected(val amount: Long, val date: String)
         val random = Random(350_239_006)
-        val dates = (0..4).map { DateManager.today().minusDays(it.toLong()).toString() }
+        val dates = listOf(today)
         val ledger = linkedMapOf<Long, Expected>()
         for (date in dates) repo.ensureDate(date)
         repeat(120) { step ->

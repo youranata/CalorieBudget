@@ -20,7 +20,7 @@ class StatsChartView @JvmOverloads constructor(context: Context, attrs: Attribut
         days = values.sortedBy { it.date }
         start = from ?: days.firstOrNull()?.let { LocalDate.parse(it.date) } ?: to
         end = to; invalidate()
-        contentDescription = "每日摄入趋势与预算对比，${days.count { it.recordCount > 0 }} 天有摄入记录。折线断开表示缺失日期。"
+        contentDescription = "每日摄入趋势与预算对比，${days.count { it.hasRecords }} 天有摄入记录。折线断开表示缺失日期。"
     }
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
@@ -58,8 +58,8 @@ class StatsChartView @JvmOverloads constructor(context: Context, attrs: Attribut
         previous = null; paint.color = intake; paint.strokeWidth = 2.5f * density
         days.forEach { day ->
             val prev = previous
-            if (day.recordCount > 0) {
-                if (prev != null && prev.recordCount > 0 && ChronoUnit.DAYS.between(LocalDate.parse(prev.date), LocalDate.parse(day.date)) == 1L)
+            if (day.hasRecords) {
+                if (prev != null && prev.hasRecords && ChronoUnit.DAYS.between(LocalDate.parse(prev.date), LocalDate.parse(day.date)) == 1L)
                     canvas.drawLine(x(prev.date), y(prev.totalMilliKcal), x(day.date), y(day.totalMilliKcal), paint)
                 canvas.drawCircle(x(day.date), y(day.totalMilliKcal), 3.5f * density, paint)
             }
@@ -69,6 +69,6 @@ class StatsChartView @JvmOverloads constructor(context: Context, attrs: Attribut
         canvas.drawText(start.toString().substring(5), left, height - 8 * density, paint)
         val label = end.toString().substring(5)
         canvas.drawText(label, right - paint.measureText(label), height - 8 * density, paint)
-        if (days.none { it.recordCount > 0 }) canvas.drawText("此范围尚无摄入记录", left + 12 * density, (top + bottom) / 2, paint)
+        if (days.none { it.hasRecords }) canvas.drawText("此范围尚无摄入记录", left + 12 * density, (top + bottom) / 2, paint)
     }
 }

@@ -11,6 +11,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.test.core.app.ApplicationProvider
 import com.example.caloriewidget.*
 import com.example.caloriewidget.domain.*
+import com.example.caloriewidget.data.CalorieRepository
 import com.example.caloriewidget.widget.CalorieWidgetProvider
 import kotlinx.coroutines.*
 import org.junit.*
@@ -132,6 +133,7 @@ class RecordManagementUiAcceptanceTest {
         save(input("kJ"), "1234.567", "原始备注")
         val original = runBlocking { app.database.intakeDao().getForDate(today).single() }
         val activity = input(id = original.id)
+        assertEquals("", activity.findViewById<TextView>(R.id.form_error).text.toString())
         assertEquals("1234.567", activity.findViewById<EditText>(R.id.amount_input).text.toString())
         save(activity, "1234.567", "修改备注")
         val updated = runBlocking { requireNotNull(app.repository.getRecord(original.id)) }
@@ -144,29 +146,34 @@ class RecordManagementUiAcceptanceTest {
         assertEquals(1, summary().recordCount)
     }
 
-    @Test fun historicalFormEditAndDeleteStayOnHistoricalDayAndRequireConfirmation() {
+    @Test fun historyDisplaysOnlyFrozenTotalsAndHasNoAddEditOrDeleteEntry() {
         val date = DateManager.today().minusDays(1).toString()
         save(input(), "100", "今天")
-        save(input(date = date), "300", "昨天")
+        val oldId = runBlocking {
+            CalorieRepository(app.database) { date }.addRecord(CalorieMath.parseAmount("300", "kcal"),
+                "不应保留的昨天备注", DateManager.timestamp(LocalDate.parse(date), 12, 0), "old", date)
+        }
+        runBlocking { app.repository.ensureDate() }
         assertEquals(100_000L, summary().totalMilliKcal)
         assertEquals(300_000L, summary(date).totalMilliKcal)
-        val old = runBlocking { app.database.intakeDao().getForDate(date).single() }
-        val editor = input(id = old.id)
-        editor.findViewById<RadioGroup>(R.id.unit_group).check(R.id.unit_kj)
-        save(editor, "1000", "昨天修改")
-        assertEquals(239_006L, summary(date).totalMilliKcal)
-        assertEquals(100_000L, summary().totalMilliKcal)
         val intent = Intent(app, DayDetailActivity::class.java).putExtra(DayDetailActivity.EXTRA_DATE, date)
         val details = Robolectric.buildActivity(DayDetailActivity::class.java, intent).setup().visible().also(controllers::add).get()
         val rows = details.findViewById<LinearLayout>(R.id.records_container)
-        await("Historical record should render") { rows.childCount == 1 }
-        rows.getChildAt(0).findViewById<View>(R.id.delete_record).performClick()
-        dialog().getButton(AlertDialog.BUTTON_NEGATIVE).performClick()
-        assertEquals(1, summary(date).recordCount)
-        rows.getChildAt(0).findViewById<View>(R.id.delete_record).performClick()
-        dialog().getButton(AlertDialog.BUTTON_POSITIVE).performClick()
-        await("Confirmed historical deletion should refresh details") { rows.childCount == 0 }
-        assertEquals(0, summary(date).recordCount)
+        await("Archived summary should render") { details.findViewById<TextView>(R.id.summary).text.contains("300 kcal") }
+        assertEquals(View.GONE, details.findViewById<View>(R.id.add_button).visibility)
+        assertEquals(0, rows.childCount)
+        assertTrue(details.findViewById<TextView>(R.id.empty_text).text.contains("只能查看"))
+        for (extra in listOf(Intent(app, InputActivity::class.java).putExtra(InputActivity.EXTRA_DATE, date),
+            Intent(app, InputActivity::class.java).putExtra(InputActivity.EXTRA_RECORD_ID, oldId))) {
+            val editor = Robolectric.buildActivity(InputActivity::class.java, extra).setup().visible().also(controllers::add).get()
+            await("Historical input must explain read-only state") { editor.findViewById<TextView>(R.id.form_error).text.isNotEmpty() }
+            assertFalse(editor.findViewById<View>(R.id.save_button).isEnabled)
+            editor.findViewById<EditText>(R.id.amount_input).setText("900")
+            editor.findViewById<View>(R.id.save_button).performClick()
+            assertEquals(300_000L, summary(date).totalMilliKcal)
+        }
+        assertTrue(runBlocking { app.database.intakeDao().getForDate(date).isEmpty() })
+        assertNull(runBlocking { app.repository.getRecord(oldId) })
         assertEquals(100_000L, summary().totalMilliKcal)
     }
 }

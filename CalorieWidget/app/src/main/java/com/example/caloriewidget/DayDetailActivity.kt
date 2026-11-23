@@ -26,11 +26,17 @@ class DayDetailActivity : BaseActivity() {
         lifecycleScope.launch {
             repository.ensureDate(date)
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                combine(repository.observeRecords(date), repository.observeHistory()) { entries, history -> entries to history.first { it.date == date } }
+                combine(repository.observeRecords(date), repository.observeHistory()) { entries, history -> entries to history.firstOrNull { it.date == date } }
                     .collect { (entries, s) ->
-                        binding.summary.text = "摄入 ${CalorieMath.milliKcalToDisplay(s.totalMilliKcal)} kcal / ${CalorieMath.milliKjToDisplay(s.totalMilliKcal)} kJ\n预算 ${CalorieMath.milliKcalToDisplay(s.budgetMilliKcal)} kcal · 剩余 ${CalorieMath.milliKcalToDisplay(s.remainingMilliKcal)} kcal"
-                        binding.emptyText.isVisible = entries.isEmpty()
-                        RecordRows.render(this@DayDetailActivity, binding.recordsContainer, entries) { id ->
+                        val readOnly = s == null || s.isArchived || date != DateManager.todayString()
+                        binding.addButton.isVisible = !readOnly
+                        binding.summary.text = s?.let {
+                            val intake = if (!readOnly || it.hasRecords) "${CalorieMath.milliKcalToDisplay(it.totalMilliKcal)} kcal / ${CalorieMath.milliKjToDisplay(it.totalMilliKcal)} kJ" else "尚无摄入记录"
+                            "摄入 $intake\n预算 ${CalorieMath.milliKcalToDisplay(it.budgetMilliKcal)} kcal · 剩余 ${CalorieMath.milliKcalToDisplay(it.remainingMilliKcal)} kcal"
+                        } ?: "该日期没有保存的数据"
+                        binding.emptyText.isVisible = readOnly || entries.isEmpty()
+                        binding.emptyText.text = if (readOnly) "历史仅保留每日目标和总摄入，只能查看。" else getString(R.string.activity_day_detail_text_3)
+                        RecordRows.render(this@DayDetailActivity, binding.recordsContainer, if (readOnly) emptyList() else entries) { id ->
                             (application as CalorieWidgetApp).appScope.launch { repository.deleteRecord(id); CalorieWidgetProvider.refreshAll(this@DayDetailActivity) }
                         }
                     }

@@ -20,25 +20,26 @@ import java.util.UUID
 class RepositoryTest {
     private lateinit var db: AppDatabase
     private lateinit var repository: CalorieRepository
+    private var currentDay = DateManager.todayString()
     @Before fun setup() {
         db = Room.inMemoryDatabaseBuilder(ApplicationProvider.getApplicationContext(), AppDatabase::class.java).build()
-        repository = CalorieRepository(db)
+        repository = CalorieRepository(db) { currentDay }
     }
     @After fun close() { db.close() }
     private fun time(date: String) = DateManager.timestamp(LocalDate.parse(date), 12, 0)
     private suspend fun add(amount: String, date: String = DateManager.todayString(), key: String = UUID.randomUUID().toString()) =
         repository.addRecord(CalorieMath.parseAmount(amount, "kcal"), "早餐", time(date), key)
 
-    @Test fun addEditMoveDeleteAndOverBudgetRemainConsistent() = runBlocking {
+    @Test fun addEditDeleteAndOverBudgetRemainConsistentAndHistoryCannotBeWritten() = runBlocking {
         val today = DateManager.todayString(); val yesterday = DateManager.today().minusDays(1).toString()
         val id = add("2200")
         assertEquals(-200_000L, repository.getSummary(today).remainingMilliKcal)
-        repository.updateRecord(id, CalorieMath.parseAmount("1000", "kJ"), "午餐", time(yesterday), yesterday, java.time.ZoneId.systemDefault().id)
-        assertEquals(0L, repository.getSummary(today).totalMilliKcal)
-        assertEquals(239006L, repository.getSummary(yesterday).totalMilliKcal)
+        assertTrue(runCatching { repository.updateRecord(id, CalorieMath.parseAmount("1000", "kJ"), "午餐", time(yesterday), yesterday, java.time.ZoneId.systemDefault().id) }.isFailure)
+        repository.updateRecord(id, CalorieMath.parseAmount("1000", "kJ"), "午餐", time(today), today, java.time.ZoneId.systemDefault().id)
+        assertEquals(239006L, repository.getSummary(today).totalMilliKcal)
         repository.deleteRecord(id)
-        assertEquals(0L, repository.getSummary(yesterday).totalMilliKcal)
-        assertEquals(0, repository.getSummary(yesterday).recordCount)
+        assertEquals(0L, repository.getSummary(today).totalMilliKcal)
+        assertNull(db.budgetDao().get(yesterday))
     }
     @Test fun rapidConcurrentWritesAndSameSubmissionAreSafe() = runBlocking {
         val ids = (1..24).map { async(Dispatchers.Default) { add("10") } }.awaitAll()
@@ -50,17 +51,24 @@ class RepositoryTest {
     }
     @Test fun budgetChangesApplyTodayAndNewSnapshotsOnly() = runBlocking {
         val yesterday = DateManager.today().minusDays(1).toString()
+        currentDay = yesterday
         repository.ensureDate(yesterday); add("500", yesterday)
+        currentDay = DateManager.todayString()
         repository.setDefaultBudget(1_800_000L)
         assertEquals(1_800_000L, repository.getSummary(DateManager.todayString()).budgetMilliKcal)
         assertEquals(2_000_000L, repository.getSummary(yesterday).budgetMilliKcal)
-        assertEquals(1_800_000L, repository.getSummary(DateManager.today().plusDays(1).toString()).budgetMilliKcal)
+        currentDay = DateManager.today().plusDays(1).toString()
+        assertEquals(1_800_000L, repository.getSummary(currentDay).budgetMilliKcal)
     }
-    @Test fun repeatedDateChecksNeverClearHistoryAndZeroIsDistinctFromMissing() = runBlocking {
+    @Test fun repeatedDateChecksKeepArchivedTotalsAndZeroIsDistinctFromMissing() = runBlocking {
         val old = DateManager.today().minusDays(12).toString()
+        currentDay = old
         add("0", old)
+        currentDay = DateManager.todayString()
         repeat(5) { repository.ensureDate() }
-        assertEquals(1, repository.getSummary(old).recordCount)
+        assertEquals(0, repository.getSummary(old).recordCount)
+        assertTrue(repository.getSummary(old).hasRecords)
+        assertTrue(repository.getSummary(old).isArchived)
         assertEquals(0L, repository.getSummary(old).totalMilliKcal)
         assertEquals(0, repository.getSummary(DateManager.todayString()).recordCount)
         val history = repository.observeHistory().first()
