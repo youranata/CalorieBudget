@@ -90,6 +90,23 @@ class PrivacyAuditTest(unittest.TestCase):
         self.assertIn('email', report['finding_counts'])
         self.assertNotIn(address, output)
 
+    def test_approved_email_is_allowed_only_in_commit_identity_fields(self):
+        address = 'approved-maintainer' + '@' + 'private.invalid'
+        self.git('config', '--local', 'user.email', address)
+        self.env.update(GIT_AUTHOR_EMAIL=address, GIT_COMMITTER_EMAIL=address)
+        self.commit('Clean project files\n')
+        self.assertIn('email', self.audit()[0]['finding_counts'])
+        self.assertTrue(self.audit('--allow-configured-commit-email')[0]['passed'])
+        self.commit(address)
+        report, output = self.audit('--allow-configured-commit-email')
+        self.assertIn('email', report['finding_counts'])
+        self.assertNotIn(address, output)
+        self.commit('Clean project files again\n')
+        self.git('commit', '--allow-empty', '-qm', 'Contact ' + address)
+        report, output = self.audit('--allow-configured-commit-email')
+        self.assertIn('email', report['finding_counts'])
+        self.assertNotIn(address, output)
+
     def test_history_only_private_data_is_detected(self):
         private_path = '/' + 'home/' + 'synthetic-user/file'
         device = 'serialno=' + 'SYNTHETIC1234'

@@ -28,12 +28,23 @@ def main():
     parser.add_argument('--identifiers-file', type=Path)
     parser.add_argument('--include-github-owner', action='store_true',
                         help='Also treat GitHub remote account names as private (excluded by default)')
+    parser.add_argument('--allow-configured-commit-email', action='store_true',
+                        help='Allow repository-local user.email only in author/committer fields')
     parser.add_argument('--output', type=Path)
     args = parser.parse_args()
     repo = Path(args.repo).resolve()
 
     def git(*params):
         return subprocess.check_output(['git', '-C', str(repo), *params])
+
+    approved_commit_email = None
+    if args.allow_configured_commit_email:
+        try:
+            approved_commit_email = git('config', '--local', '--get', 'user.email').strip()
+        except subprocess.CalledProcessError:
+            parser.error('Set repository-local user.email before allowing the commit email')
+        if not approved_commit_email or any(c in approved_commit_email for c in (b'\n', b'\r', b'<', b'>')):
+            parser.error('Repository-local user.email must be a single email address')
 
     identifiers = {Path.home().name, getpass.getuser(), socket.gethostname()}
     if args.include_github_owner:
@@ -69,7 +80,7 @@ def main():
             return private_names.sub(b'<redacted>', value.encode()).decode(errors='replace')
         return value
 
-    def scan(data, location):
+    def scan(data, location, extra_safe_emails=()):
         if data.startswith(b'dex\n') and data[7:8] == b'\0':
             # DEX code and offsets can resemble contact addresses by chance.
             # Real text is held in the string table; inspect every string.
@@ -96,7 +107,7 @@ def main():
             hits = []
             for match in pattern.finditer(data):
                 if category == 'email':
-                    if match.group(0) in safe_emails:
+                    if match.group(0) in safe_emails or match.group(0) in extra_safe_emails:
                         continue
                     # SSH transport syntax is not a personal contact address.
                     if match.group(0) == b'git' + b'@github.com' and data[match.end():match.end() + 1] in {b':', b'/'}:
@@ -137,7 +148,13 @@ def main():
                 if kind == b'blob':
                     objects[oid.decode()].add(path.decode())
             metadata = git('cat-file', 'commit', commit)
-            scan(metadata, 'commit:' + commit[:12])
+            location = 'commit:' + commit[:12]
+            headers, _, message = metadata.partition(b'\n\n')
+            for line in headers.splitlines():
+                identity = re.fullmatch(rb'(?:author|committer) [^\n]* <([^<>\n]+)> [0-9]+ [+-][0-9]{4}', line)
+                allowed = (approved_commit_email,) if identity and identity.group(1) == approved_commit_email else ()
+                scan(line, location, allowed)
+            scan(message, location)
     archives = 0
     for oid, names in objects.items():
         for name in names:
@@ -156,6 +173,7 @@ def main():
         else:
             scan(data, location)
     result = {'scope': 'history' if args.history else 'index' if args.index else 'HEAD',
+              'configured_commit_email_allowed': bool(approved_commit_email),
               'commits': len(commits), 'unique_blobs': len(objects),
               'unique_paths': len({path for names in objects.values() for path in names}),
               'archives_inspected': archives, 'findings': findings,
