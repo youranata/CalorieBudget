@@ -1,0 +1,9 @@
+<resources>
+    <color name="calorie_primary">#276A55</color>
+    <color name="calorie_warning">#B3261E</color>
+    <color name="text_primary">#172C24</color>
+    <color name="text_secondary">#51685E</color>
+    <color name="surface">#F7FAF7</color>
+    <color name="card">#E8F1EA</color>
+    <color name="chart_budget">#AD6500</color>
+</resources>

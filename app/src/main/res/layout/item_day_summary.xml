@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="14dp" android:layout_marginTop="8dp" android:background="@drawable/card_background">
-    <TextView android:id="@+id/day_date" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="2026年1月1日" android:textSize="17sp" android:textStyle="bold" />
-    <TextView android:id="@+id/day_total" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="摄入 1800 kcal" />
-    <TextView android:id="@+id/day_budget" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="预算 2000 · 4 条记录" android:textColor="@color/text_secondary" />
-    <TextView android:id="@+id/day_remaining" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="剩余 200 kcal" android:textColor="@color/calorie_primary" />
-</LinearLayout>

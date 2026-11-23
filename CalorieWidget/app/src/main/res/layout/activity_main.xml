@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="match_parent" android:fillViewport="true">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="20dp">
+        <TextView android:id="@+id/today_date" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/activity_main_text_1" android:textColor="@color/text_secondary" android:textSize="16sp" />
+        <TextView android:id="@+id/remaining" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:text="@string/activity_main_text_2" android:textSize="48sp" android:textStyle="bold" />
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/activity_main_text_3" android:textColor="@color/text_secondary" />
+        <TextView android:id="@+id/remaining_kj" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/activity_main_text_4" android:textColor="@color/text_secondary" android:textSize="14sp" />
+        <TextView android:id="@+id/consumed" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:text="@string/activity_main_text_5" android:textSize="16sp" />
+        <TextView android:id="@+id/budget" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/activity_main_text_6" android:textColor="@color/text_secondary" android:textSize="14sp" />
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginTop="16dp">
+            <Button android:id="@+id/add_record_button" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/activity_main_text_7" />
+            <Button android:id="@+id/budget_button" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/activity_main_text_8" />
+        </LinearLayout>
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+            <Button android:id="@+id/history_button" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/activity_history_text_1" />
+            <Button android:id="@+id/stats_button" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/activity_main_text_9" />
+        </LinearLayout>
+        <Button android:id="@+id/alarm_button" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/activity_main_text_10" style="?attr/borderlessButtonStyle" />
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="20dp" android:text="@string/activity_main_text_11" android:textSize="20sp" android:textStyle="bold" />
+        <TextView android:id="@+id/empty_text" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="20dp" android:text="@string/activity_main_text_12" android:textColor="@color/text_secondary" />
+        <LinearLayout android:id="@+id/records_container" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" />
+    </LinearLayout>
+</ScrollView>

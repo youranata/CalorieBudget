@@ -1,25 +1,18 @@
-# Gradle
-.gradle/
-build/
+# Workspace-only SDK, Gradle caches, and verification artifacts
+.tools/
+artifacts/
+**/.gradle/
 **/build/
-
-# Android Studio
-.idea/
+**/local.properties
+**/.idea/
 *.iml
-local.properties
-captures/
-.externalNativeBuild/
-.cxx/
-
-# Kotlin / Java
+**/captures/
+**/.externalNativeBuild/
+**/.cxx/
 *.class
 *.hprof
-
-# APK / AAB
 *.apk
 *.aab
-
-# OS and logs
+*.log
 .DS_Store
 Thumbs.db
-*.log
