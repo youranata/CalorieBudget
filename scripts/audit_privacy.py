@@ -25,6 +25,8 @@ def main():
     mode.add_argument('--index', action='store_true')
     mode.add_argument('--history', action='store_true')
     parser.add_argument('--identifiers-file', type=Path)
+    parser.add_argument('--include-github-owner', action='store_true',
+                        help='Also treat GitHub remote account names as private (excluded by default)')
     parser.add_argument('--output', type=Path)
     args = parser.parse_args()
     repo = Path(args.repo).resolve()
@@ -33,12 +35,13 @@ def main():
         return subprocess.check_output(['git', '-C', str(repo), *params])
 
     identifiers = {Path.home().name, getpass.getuser(), socket.gethostname()}
-    for remote in git('remote').decode().splitlines():
-        # Read configured URLs before a user's url.insteadOf transport rewrite.
-        for url in git('config', '--get-all', 'remote.' + remote + '.url').decode().splitlines():
-            match = re.match(r'^(?:https?://github\.com/|ssh://git@github\.com/|git@github\.com:)([^/\s]+)/', url)
-            if match:
-                identifiers.add(match.group(1))
+    if args.include_github_owner:
+        for remote in git('remote').decode().splitlines():
+            # Read configured URLs before a user's url.insteadOf transport rewrite.
+            for url in git('config', '--get-all', 'remote.' + remote + '.url').decode().splitlines():
+                match = re.match(r'^(?:https?://github\.com/|ssh://git@github\.com/|git@github\.com:)([^/\s]+)/', url)
+                if match:
+                    identifiers.add(match.group(1))
     if args.identifiers_file:
         identifiers.update(json.loads(args.identifiers_file.read_text()))
     identifiers = {v for v in identifiers if len(v) >= 3 and v not in {'root', 'user', 'example'}}

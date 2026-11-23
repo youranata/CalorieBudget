@@ -63,7 +63,7 @@ class PrivacyAuditTest(unittest.TestCase):
         self.assertIn('email', report['finding_counts'])
         self.assertNotIn(address, output)
 
-    def test_network_remote_owner_is_detected(self):
+    def test_network_remote_owner_is_allowed_unless_explicitly_included(self):
         owner = 'synthetic-account'
         self.commit(owner)
         for url in ['https://github.com/' + owner + '/repo.git',
@@ -74,9 +74,19 @@ class PrivacyAuditTest(unittest.TestCase):
                     self.git('remote', 'set-url', 'origin', url)
                 else:
                     self.git('remote', 'add', 'origin', url)
-                report, output = self.audit()
+                self.assertTrue(self.audit()[0]['passed'])
+                report, output = self.audit('--include-github-owner')
                 self.assertIn('personal_identifier', report['finding_counts'])
                 self.assertNotIn(owner, output)
+
+    def test_allowed_github_name_does_not_allow_personal_email(self):
+        owner = 'synthetic-account'
+        self.git('remote', 'add', 'origin', 'https://github.com/' + owner + '/repo.git')
+        address = owner + '@' + 'private.invalid'
+        self.commit(address)
+        report, output = self.audit()
+        self.assertIn('email', report['finding_counts'])
+        self.assertNotIn(address, output)
 
     def test_history_only_private_data_is_detected(self):
         private_path = '/' + 'home/' + 'synthetic-user/file'
