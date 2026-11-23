@@ -13,6 +13,7 @@ import json
 from pathlib import Path
 import re
 import socket
+import struct
 import subprocess
 import sys
 import zipfile
@@ -48,7 +49,7 @@ def main():
     private_names = re.compile(rb'(?i)(?<![\w])(?:' + b'|'.join(
         re.escape(value.encode()) for value in sorted(identifiers)) + rb')(?![\w])') if identifiers else None
     patterns = {
-        'machine_path': re.compile(rb'/(?:' + b'|'.join(x.encode() for x in ('home', 'Users', 'mnt', 'media', 'Volumes'))
+        'machine_path': re.compile(rb'(?<![A-Za-z0-9_])/(?:' + b'|'.join(x.encode() for x in ('home', 'Users', 'mnt', 'media', 'Volumes'))
                                    + rb')/[A-Za-z0-9][^\s`<>"\']*|[A-Za-z]:\\Users\\[^\s`<>"\']+'),
         'email': re.compile(rb'[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}', re.I),
         'private_key_or_token': re.compile(rb'-----BEGIN (?:[A-Z ]+)?PRIVATE KEY-----|gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|AKIA[0-9A-Z]{16}|sk-[A-Za-z0-9]{20,}'),
@@ -59,6 +60,7 @@ def main():
     forbidden_names = {'local.properties', 'adbkey', 'adbkey.pub', 'id_rsa', 'id_ed25519', '.env',
                        'key.properties', 'keystore.properties', 'signing.properties', 'secrets.properties'}
     forbidden_suffixes = {'.keystore', '.jks', '.p12', '.pfx', '.pem', '.key', '.db', '.sqlite', '.sqlite3', '.apk', '.aab', '.pyc', '.pyo'}
+    public_apks = {'CalorieWidget/downloads/CalorieWidget-debug.apk'}
     ignored_parts = {'.tools', 'artifacts', '.gradle', '.kotlin', '.idea', '.ssh', 'build', '__pycache__'}
     findings = []
 
@@ -68,6 +70,28 @@ def main():
         return value
 
     def scan(data, location):
+        if data.startswith(b'dex\n') and data[7:8] == b'\0':
+            # DEX code and offsets can resemble contact addresses by chance.
+            # Real text is held in the string table; inspect every string.
+            count, table_offset = struct.unpack_from('<II', data, 56)
+            if table_offset + count * 4 > len(data):
+                raise ValueError('Invalid DEX string table: ' + label(location))
+            strings = []
+            for index in range(count):
+                start = struct.unpack_from('<I', data, table_offset + index * 4)[0]
+                for _ in range(5):
+                    size_byte = data[start]
+                    start += 1
+                    if not size_byte & 0x80:
+                        break
+                else:
+                    raise ValueError('Invalid DEX string length: ' + label(location))
+                end = data.index(b'\0', start)
+                strings.append(data[start:end])
+            data = b'\n'.join(strings)
+        # Binary string tables use NUL separators; do not join adjacent strings
+        # into synthetic emails or paths. Scan every separated string instead.
+        data = data.replace(b'\0', b'\n')
         for category, pattern in patterns.items():
             hits = []
             for match in pattern.finditer(data):
@@ -85,7 +109,9 @@ def main():
 
     def check_path(path):
         p = Path(path)
-        if p.name in forbidden_names or p.suffix.lower() in forbidden_suffixes or any(part in ignored_parts for part in p.parts):
+        if (p.name in forbidden_names
+                or (p.suffix.lower() in forbidden_suffixes and path not in public_apks)
+                or any(part in ignored_parts for part in p.parts)):
             findings.append({'location': label(path), 'category': 'private_or_generated_file', 'count': 1})
         if private_names and private_names.search(path.encode()):
             findings.append({'location': label(path), 'category': 'personal_identifier_in_filename', 'count': 1})
@@ -118,13 +144,17 @@ def main():
             check_path(name)
         location = sorted(names)[0]
         data = git('cat-file', 'blob', oid)
-        scan(data, location)
         if data.startswith(b'PK\x03\x04'):
             with zipfile.ZipFile(io.BytesIO(data)) as archive:
                 archives += 1
+                scan(archive.comment, location + '!archive-comment')
                 for entry in archive.infolist():
+                    scan(entry.filename.encode(), location + '!' + entry.filename)
+                    scan(entry.comment, location + '!' + entry.filename + '!comment')
                     if not entry.is_dir():
                         scan(archive.read(entry), location + '!' + entry.filename)
+        else:
+            scan(data, location)
     result = {'scope': 'history' if args.history else 'index' if args.index else 'HEAD',
               'commits': len(commits), 'unique_blobs': len(objects),
               'unique_paths': len({path for names in objects.values() for path in names}),

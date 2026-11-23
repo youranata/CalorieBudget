@@ -46,7 +46,9 @@ python3 scripts/audit_privacy.py --history # 检查全部可达历史
 
 脚本默认检查邮件、本机路径、当前本机账号与主机标识、常见密钥与令牌、常见设备标识、手机号及不应跟踪的私有文件。GitHub 账号名默认不加入敏感标识列表；需要更严格的检查时可加 `--include-github-owner`。可通过 `--identifiers-file` 提供额外的本地 JSON 标识列表；该列表应保存在被忽略的 `.tools/` 中，不应提交。显式列表中的标识仍会扫描，不会因默认允许 GitHub 用户名而被自动豁免。
 
-启用账号检查时，扫描器只从 GitHub 网络远端提取账号名，避免将本地镜像的目录名误当成个人信息；SSH 克隆语法也单独识别。`python3 -m unittest discover -s scripts -p 'test_audit_privacy.py'` 的 6 项测试验证本地镜像、SSH 地址、个人邮箱、GitHub 名字的默认允许与显式检查、设备标识及只存在于历史中的信息；合成样本和临时 Git 仓库均保存在被忽略的 `.tools/` 中。
+启用账号检查时，扫描器只从 GitHub 网络远端提取账号名，避免将本地镜像的目录名误当成个人信息；SSH 克隆语法也单独识别。`python3 -m unittest discover -s scripts -p 'test_audit_privacy.py'` 验证本地镜像、SSH 地址、个人邮箱、GitHub 名字的默认允许与显式检查、设备标识及只存在于历史中的信息；合成样本和临时 Git 仓库均保存在被忽略的 `.tools/` 中。
+
+新增 README 下载入口后，仅 `CalorieWidget/downloads/CalorieWidget-debug.apk` 允许作为分发文件跟踪，其他 APK 仍受忽略规则和审计限制。分发 APK 的 ZIP 内容仍逐项扫描；DEX 按字符串表解析文本，避免将指令字节误识别为邮箱，其他二进制字符串按 NUL 分隔，Android 的 `android/media` 类名不当作本机路径。新增用例验证分发文件中的个人邮箱与绝对路径仍能检出，全部 8 项扫描器测试通过。APK 签名验证通过，证书身份为通用 Android Debug，不含个人签名身份。
 
 ## 历史清理
 

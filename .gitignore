@@ -14,6 +14,7 @@ __pycache__/
 *.py[cod]
 *.hprof
 *.apk
+!CalorieWidget/downloads/CalorieWidget-debug.apk
 *.aab
 *.log
 .DS_Store

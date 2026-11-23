@@ -3,9 +3,11 @@ import json
 import os
 from pathlib import Path
 import subprocess
+import struct
 import sys
 import tempfile
 import unittest
+import zipfile
 
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -100,6 +102,48 @@ class PrivacyAuditTest(unittest.TestCase):
                         <= set(report['finding_counts']))
         for value in [private_path, device, token]:
             self.assertNotIn(value, output)
+
+    def test_published_apk_is_allowed_but_its_contents_are_scanned(self):
+        apk = self.repo / 'CalorieWidget' / 'downloads' / 'CalorieWidget-debug.apk'
+        apk.parent.mkdir(parents=True)
+        def dex_with_strings(strings):
+            header = bytearray(112)
+            header[:8] = b'dex\n035\0'
+            struct.pack_into('<II', header, 56, len(strings), 112)
+            # Binary metadata is not text. It can resemble an email by chance.
+            header[8:27] = b'fake' + b'@' + b'binary.invalid'
+            offsets = bytearray()
+            content = bytearray()
+            for value in strings:
+                encoded = value.encode()
+                self.assertLess(len(encoded), 128)
+                offsets.extend(struct.pack('<I', 112 + 4 * len(strings) + len(content)))
+                content.extend(bytes([len(encoded)]) + encoded + b'\0')
+            return bytes(header + offsets + content)
+
+        clean_strings = ['Landroid/' + 'media/AudioManager;', 'item@', 'example.invalid']
+        clean_dex = dex_with_strings(clean_strings)
+        with zipfile.ZipFile(apk, 'w') as archive:
+            archive.writestr('classes.dex', clean_dex)
+        self.git('add', '.')
+        self.git('commit', '-qm', 'Synthetic published APK')
+        self.assertTrue(self.audit()[0]['passed'])
+        address = 'synthetic-person' + '@' + 'private.invalid'
+        private_path = '/' + 'home/' + 'synthetic-user/project'
+        with zipfile.ZipFile(apk, 'w') as archive:
+            archive.writestr('classes.dex', dex_with_strings(clean_strings + [address, private_path]))
+        self.git('add', '.')
+        self.git('commit', '-qm', 'Synthetic private data in APK')
+        report, output = self.audit()
+        self.assertTrue({'email', 'machine_path'} <= set(report['finding_counts']))
+        self.assertNotIn(address, output)
+        self.assertNotIn(private_path, output)
+
+    def test_unapproved_apk_path_is_rejected(self):
+        (self.repo / 'random.apk').write_bytes(b'Not a published APK')
+        self.git('add', '.')
+        self.git('commit', '-qm', 'Synthetic unapproved APK')
+        self.assertIn('private_or_generated_file', self.audit()[0]['finding_counts'])
 
 
 if __name__ == '__main__':
