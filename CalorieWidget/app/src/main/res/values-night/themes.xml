@@ -11,8 +11,11 @@
         <item name="android:statusBarColor">@color/surface</item>
         <item name="android:windowLightStatusBar">false</item>
         <item name="colorOnPrimary">@color/on_primary</item>
-        <item name="colorSecondary">@color/calorie_primary</item>
-        <item name="colorOnSecondary">@color/on_primary</item>
+        <item name="colorSecondary">@color/mist_ink</item>
+        <item name="colorOnSecondary">@color/mist_surface</item>
+        <item name="colorTertiary">@color/mauve_ink</item>
+        <item name="colorOnTertiary">@color/mauve_surface</item>
+        <item name="colorError">@color/calorie_warning</item>
         <item name="colorSurfaceVariant">@color/accent_surface</item>
         <item name="colorOutline">@color/outline</item>
         <item name="colorControlHighlight">@color/ripple</item>

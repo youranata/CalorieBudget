@@ -29,6 +29,8 @@ DRAWABLES = {
     "card_background.xml", "widget_background.xml", "summary_background.xml",
     "field_background.xml", "widget_action_background.xml", "widget_note_background.xml",
     "ic_edit.xml", "ic_delete.xml",
+    "balance_contours.xml", "page_background.xml", "glass_background.xml",
+    "mist_background.xml", "sand_background.xml", "mauve_background.xml",
 }
 FIXED_ALLOWED = {
     "README.md", "CalorieWidget/README.md", APP + "build.gradle.kts",

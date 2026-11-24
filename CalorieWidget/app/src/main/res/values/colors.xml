@@ -1,17 +1,30 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <color name="calorie_primary">#235D50</color>
-    <color name="calorie_warning">#AF4139</color>
-    <color name="text_primary">#202E29</color>
-    <color name="text_secondary">#5E6B65</color>
-    <color name="surface">#F5F5F0</color>
-    <color name="card">#FFFFFF</color>
-    <color name="chart_budget">#9B681E</color>
+    <color name="calorie_primary">#305854</color>
+    <color name="calorie_warning">#A04F4B</color>
+    <color name="text_primary">#273438</color>
+    <color name="text_secondary">#606E73</color>
+    <color name="surface">#F3F2EF</color>
+    <color name="card">#FFFEFC</color>
+    <color name="chart_budget">#94724D</color>
     <color name="on_primary">#FFFFFF</color>
-    <color name="accent_surface">#EAF0EB</color>
-    <color name="outline">#D9E1DA</color>
-    <color name="hero_start">#FFFFFF</color>
-    <color name="hero_end">#EEF3ED</color>
-    <color name="ripple">#24235D50</color>
-    <color name="disabled_surface">#E4E7E0</color>
+    <color name="accent_surface">#E6ECE7</color>
+    <color name="outline">#E1E2DC</color>
+    <color name="hero_start">#E4ECEB</color>
+    <color name="hero_end">#E9EAF0</color>
+    <color name="ripple">#20305854</color>
+    <color name="disabled_surface">#E6E7E2</color>
+    <color name="mist_surface">#E6EBEF</color>
+    <color name="mist_ink">#485F70</color>
+    <color name="sand_surface">#EEE6D9</color>
+    <color name="sand_ink">#766047</color>
+    <color name="mauve_surface">#EDE7ED</color>
+    <color name="mauve_ink">#6C5D73</color>
+    <color name="hero_glow">#C0FFFFFF</color>
+    <color name="hero_glow_fade">#00FFFFFF</color>
+    <color name="contour">#18305854</color>
+    <color name="glass_surface">#A6FFFFFF</color>
+    <color name="glass_outline">#C8FFFFFF</color>
+    <color name="card_edge">#F0EFEB</color>
+    <color name="page_end">#ECEFEC</color>
 </resources>
