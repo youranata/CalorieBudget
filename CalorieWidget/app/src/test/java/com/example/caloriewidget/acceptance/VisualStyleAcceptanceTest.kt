@@ -114,10 +114,10 @@ class VisualStyleAcceptanceTest {
     }
 
     @Test @Config(qualifiers = "w400dp-h900dp-notnight-mdpi")
-    fun lightRemoteViewsRetainAllFourEntrancesAtBothSupportedSizes() = renderWidgets("light")
+    fun lightRemoteViewsKeepBalanceAndLargerUnitButtonsAtBothSupportedSizes() = renderWidgets("light")
 
     @Test @Config(qualifiers = "w400dp-h900dp-night-mdpi")
-    fun darkRemoteViewsRetainAllFourEntrancesAtBothSupportedSizes() = renderWidgets("dark")
+    fun darkRemoteViewsKeepBalanceAndLargerUnitButtonsAtBothSupportedSizes() = renderWidgets("dark")
 
     private fun renderWidgets(mode: String) {
         val examples = listOf(
@@ -130,13 +130,16 @@ class VisualStyleAcceptanceTest {
             val height = if (compact) 132 else 140
             measure(root, width, height)
             assertAllTextFits(root)
-            listOf(R.id.widget_balance, R.id.widget_add_kcal, R.id.widget_add_kj, R.id.widget_add_note).forEach {
+            listOf(R.id.widget_balance, R.id.widget_add_kcal, R.id.widget_add_kj).forEach {
                 val target = root.findViewById<View>(it)
                 assertNotNull(target)
                 assertEquals(View.VISIBLE, target.visibility)
                 assertTrue("Widget target must keep a click listener", target.hasOnClickListeners())
                 assertTrue("Widget target must have positive area", target.width > 0 && target.height > 0)
                 assertTrue("Widget target must remain inside the widget", target.bottom <= (target.parent as View).height)
+            }
+            listOf(R.id.widget_add_kcal, R.id.widget_add_kj).forEach {
+                assertTrue("Unit buttons must have a 48dp hit height", root.findViewById<View>(it).height >= 48 * root.resources.displayMetrics.density)
             }
             assertEquals(CalorieMath.milliKcalToDisplay(summary.remainingMilliKcal), root.findViewById<TextView>(R.id.widget_remaining).text.toString())
             save(root, "${mode}-widget-${if (compact) "compact" else "regular"}-$index")

@@ -27,7 +27,8 @@ class WidgetAndUiTest {
         for (compact in listOf(false, true)) {
             val view = CalorieWidgetProvider.buildViews(app, summary, compact).apply(app, null)
             assertEquals("-200", view.findViewById<TextView>(R.id.widget_remaining).text.toString())
-            assertNotNull(view.findViewById<TextView>(R.id.widget_add_note))
+            assertTrue(view.findViewById<TextView>(R.id.widget_add_kcal).hasOnClickListeners())
+            assertTrue(view.findViewById<TextView>(R.id.widget_add_kj).hasOnClickListeners())
         }
         repeat(3) { CalorieWidgetProvider.refreshAll(app) }
         assertEquals(0, app.repository.getSummary(DateManager.todayString()).recordCount)
@@ -44,8 +45,12 @@ class WidgetAndUiTest {
         val compact = CalorieWidgetProvider.buildViews(app, summary, true).apply(app, null)
         compact.findViewById<TextView>(R.id.widget_add_kj).performClick()
         assertEquals("kJ", shadowOf(app).nextStartedActivity.getStringExtra(InputActivity.EXTRA_UNIT))
-        compact.findViewById<TextView>(R.id.widget_add_note).performClick()
-        assertTrue(shadowOf(app).nextStartedActivity.getBooleanExtra(InputActivity.EXTRA_FOCUS_NOTE, false))
+        compact.findViewById<TextView>(R.id.widget_add_kcal).performClick()
+        val kcalIntent = shadowOf(app).nextStartedActivity
+        assertEquals("kcal", kcalIntent.getStringExtra(InputActivity.EXTRA_UNIT))
+        assertFalse(kcalIntent.getBooleanExtra(InputActivity.EXTRA_FOCUS_NOTE, false))
+        compact.findViewById<android.view.View>(R.id.widget_balance).performClick()
+        assertEquals(MainActivity::class.java.name, shadowOf(app).nextStartedActivity.component?.className)
     }
     @Test fun nativeActivitiesCanOpenAndUnsubmittedInputDoesNotCreateRecord() = runBlocking {
         val app = ApplicationProvider.getApplicationContext<CalorieWidgetApp>()

@@ -44,6 +44,4 @@
     <string name="widget_calorie_contentdescription_6">输入 kcal 热量</string>
     <string name="widget_calorie_text_7">+ kJ</string>
     <string name="widget_calorie_contentdescription_8">输入 kJ 热量</string>
-    <string name="widget_calorie_text_9">备注来源</string>
-    <string name="widget_calorie_contentdescription_10">填写来源备注并新增摄入记录</string>
 </resources>

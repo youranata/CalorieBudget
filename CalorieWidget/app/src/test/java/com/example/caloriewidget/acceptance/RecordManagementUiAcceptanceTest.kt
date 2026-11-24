@@ -129,6 +129,32 @@ class RecordManagementUiAcceptanceTest {
         assertEquals(2_000_000L, summary().remainingMilliKcal)
     }
 
+    @Test fun bothWidgetUnitEntrancesStillSaveNotesExactlyOnceAtBothSizes() {
+        for (compact in listOf(false, true)) {
+            for ((unit, button, checked) in listOf(
+                Triple("kcal", R.id.widget_add_kcal, R.id.unit_kcal),
+                Triple("kJ", R.id.widget_add_kj, R.id.unit_kj)
+            )) {
+                val widget = CalorieWidgetProvider.buildViews(app, summary(), compact).apply(app, null)
+                widget.findViewById<View>(button).performClick()
+                val intent = shadowOf(app).nextStartedActivity
+                assertEquals(InputActivity::class.java.name, intent.component?.className)
+                assertEquals(unit, intent.getStringExtra(InputActivity.EXTRA_UNIT))
+                val activity = Robolectric.buildActivity(InputActivity::class.java, intent).setup().visible().also(controllers::add).get()
+                await("Widget input must load") { activity.findViewById<View>(R.id.save_button).isEnabled }
+                assertEquals(checked, activity.findViewById<RadioGroup>(R.id.unit_group).checkedRadioButtonId)
+                assertEquals(View.VISIBLE, activity.findViewById<View>(R.id.note_input).visibility)
+                save(activity, if (unit == "kcal") "350" else "1000", "小部件 $unit · $compact")
+            }
+        }
+        assertEquals(4, summary().recordCount)
+        assertEquals(1_178_012L, summary().totalMilliKcal)
+        val records = runBlocking { app.database.intakeDao().getForDate(today) }
+        assertEquals(4, records.map { it.note }.distinct().size)
+        assertTrue(records.all { it.note.startsWith("小部件 ") })
+        assertEquals(setOf("kcal", "kJ"), records.map { it.originalUnit }.toSet())
+    }
+
     @Test fun noteOnlyEditKeepsOriginalPrecisionIdentityAndRecordedTime() {
         save(input("kJ"), "1234.567", "原始备注")
         val original = runBlocking { app.database.intakeDao().getForDate(today).single() }

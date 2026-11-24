@@ -45,13 +45,12 @@ class CalorieWidgetProvider : AppWidgetProvider() {
             views.setOnClickPendingIntent(R.id.widget_balance, PendingIntent.getActivity(context, 100,
                 Intent(context, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP),
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE))
-            views.setOnClickPendingIntent(R.id.widget_add_kcal, input(context, "kcal", 101, false))
-            views.setOnClickPendingIntent(R.id.widget_add_kj, input(context, "kJ", 102, false))
-            views.setOnClickPendingIntent(R.id.widget_add_note, input(context, "kcal", 103, true))
+            views.setOnClickPendingIntent(R.id.widget_add_kcal, input(context, "kcal", 101))
+            views.setOnClickPendingIntent(R.id.widget_add_kj, input(context, "kJ", 102))
             return views
         }
-        private fun input(context: Context, unit: String, request: Int, note: Boolean) = PendingIntent.getActivity(
+        private fun input(context: Context, unit: String, request: Int) = PendingIntent.getActivity(
             context, request, Intent(context, InputActivity::class.java).putExtra(InputActivity.EXTRA_UNIT, unit)
-                .putExtra(InputActivity.EXTRA_FOCUS_NOTE, note), PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+                .putExtra(InputActivity.EXTRA_FOCUS_NOTE, false), PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
     }
 }
