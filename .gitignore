@@ -1,4 +1,4 @@
-# Workspace-only SDK, Gradle caches, and verification artifacts
+# Local SDK, caches, and generated artifacts
 .tools/
 artifacts/
 **/.gradle/

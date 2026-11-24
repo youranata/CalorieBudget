@@ -2,6 +2,8 @@
 
 CalorieWidget 是一个以桌面小部件为主要入口的本地热量预算应用。当天余额从 Room 明细计算，历史和图表使用每日目标与总摄入的只读归档，不单独保存余额。无账号、无食物数据库、无网络权限；自动云备份关闭。
 
+当前版本：**2.1.1（versionCode 5）**。沿用同一应用 ID 和签名的版本可直接覆盖升级并保留数据。App 与桌面小部件采用统一的低饱和度配色，支持浅色和深色主题。
+
 本项目采用 **[Apache License 2.0](../LICENSE)**，Copyright 2026 youranata。第三方组件许可及声明见 [NOTICE](../NOTICE) 和 [第三方声明](../THIRD_PARTY_NOTICES.md)。构建会将这三个文件复制进 APK 的 `assets/licenses/`；升级依赖或增加第三方资源时应同步更新第三方声明。
 
 ## 使用
@@ -23,10 +25,6 @@ CalorieWidget 是一个以桌面小部件为主要入口的本地热量预算应
 - Android SDK Platform 35。
 - Android SDK Build Tools 35.0.0 和 Platform Tools。
 - JDK 17 或 21；在 Gradle JDK 设置中选择对应 JDK。
-
-请在文档、日志或截图中使用 `<WORKSPACE>`、`<ANDROID_SDK>` 等占位符，避免提交本机用户名、绝对路径、主机名和设备标识。
-
-项目文档不记录完整或缩写的历史提交 ID，也不保留历史提交链接。验收基线以版本号或文字说明表示；命令所需的源码引用由维护者在本地指定，具体值仅保存在被忽略的本地材料中。
 
 Android Studio 通常自动生成 `local.properties`。命令行也可按实际位置创建：
 
@@ -64,21 +62,14 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 adb shell am start -n com.example.caloriewidget/.MainActivity
 ```
 
-这是 Debug 签名 APK，发布到商店需要另行配置正式签名。应用 ID 使用通用的 `com.example.caloriewidget`；此前使用旧 ID 的开发版本不能直接覆盖安装本版本，旧版本的本地数据库也不会自动迁移到新应用 ID。当前验证结果与真机验收清单见 [docs/VALIDATION.md](docs/VALIDATION.md)。
-
-独立验收报告：
-
-- [项目骨架与 Room 数据库](docs/ACCEPTANCE_SKELETON_DATABASE_20261123.md)：干净源码构建、Android 导入模型和 IDE 验证边界。
-- [热量计算与记录管理](docs/ACCEPTANCE_CALCULATION_RECORDS_20261123.md)：独立换算参考、记录增删改、跨日期计算与输入页交互。
-- [仓库隐私](docs/ACCEPTANCE_PRIVACY_20261123.md)：个人与机器信息扫描、脱敏及历史处理边界。
-- [历史只读归档及独立审计](docs/ACCEPTANCE_READONLY_HISTORY_20261123.md)：归档事务、旧版本升级、历史不可改动与其他功能回归。
+这是 Debug 签名 APK，发布到商店需要另行配置正式签名。应用 ID 使用通用的 `com.example.caloriewidget`；此前使用旧 ID 的开发版本不能直接覆盖安装本版本，旧版本的本地数据库也不会自动迁移到新应用 ID。
 
 ## 小米 HyperOS 小部件
 
 1. 安装后至少打开 App 一次。
 2. 桌面长按空白区域（或双指捏合），进入“小部件/添加小部件”，在 Android 小部件列表找到 **CalorieWidget**；部分 HyperOS 版本需要进入“全部应用小部件”。
 3. 拖入桌面，建议 4×2。支持横纵向缩放；桌面允许时可缩小为约 2×2，具体格数由桌面的网格和留白决定。
-4. 点击余额进入今日记录；点 `+ kcal` 或 `+ kJ` 打开录入页并预选对应单位，仍可填写来源备注。小部件不再单列备注入口，两个单位按钮均为 48dp 高。提交后刷新全部实例。刷新不会新增记录。
+4. 点击余额进入今日记录；点 `+ kcal` 或 `+ kJ` 打开录入页并预选对应单位，可填写来源备注。两个单位按钮均为 48dp 高。提交后刷新全部实例。刷新不会新增记录。
 
 ## 零点、精确闹钟与后台限制
 
@@ -121,24 +112,7 @@ CalorieWidget/
 │   │   └── StatsChartView.kt     Canvas 图表
 │   └── res/                      XML 布局、亮暗主题、小部件元数据与图标
 ├── app/src/test/                  数值、日期、统计、Room、迁移和界面测试
-├── docs/VALIDATION.md
 ├── build.gradle.kts
 ├── settings.gradle.kts
 └── gradle/wrapper/、gradlew、gradlew.bat
 ```
-
-## 2.0 外观更新
-
-本次仅调整 App 和两种桌面小部件的颜色、字体层级、间距、圆角、描边与布局分组，版本号为 2.0（versionCode 3）。全部现有文案、页面入口、输入规则、计算、数据库、历史只读归档、图表算法、闹钟及 Widget 点击/刷新逻辑保持不变。应用 ID、权限和 Debug 签名保持，可以覆盖上一版安装。
-
-设计参考公开的 [Mobile App UI/UX Design skill](https://github.com/ceorkm/mobile-app-ui-design)，只采用视觉建议；skill 及下载文件位于本地忽略目录，不随源码上传。完整核对范围、测试和实际渲染证据见 [2.0 视觉验收与独立审计](docs/ACCEPTANCE_VISUAL_2_0.md)。
-
-## 外观细化
-
-继续保持低饱和度，以雾蓝、鼠尾草绿、暖沙与灰紫建立层次。余额区使用柔和渐变及细线装饰，记录时间、操作按钮、历史提示和图表卡片共享同一套配色与间距；深色主题同步细化。既有文案、控件、功能和数据规则保持。
-
-本轮版本为 **2.1（versionCode 4）**，沿用现有应用 ID、签名和数据库，可覆盖升级并保留当前数据。完整范围、实际验证及单独审计方法见 [2.1 视觉细化与内容保护验收](docs/ACCEPTANCE_VISUAL_2_1.md)。
-
-## 2.1.1 小部件入口
-
-移除常规及紧凑小部件的独立备注入口，将两个单位按钮从 28dp 增高到 48dp；录入页的可选备注保持。版本为 **2.1.1（versionCode 5）**，签名、应用 ID 和数据库保持，可直接覆盖升级。验证范围见 [小部件入口验收](docs/ACCEPTANCE_WIDGET_2_1_1.md)。
