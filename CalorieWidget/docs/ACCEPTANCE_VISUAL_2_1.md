@@ -1,6 +1,6 @@
 # 2.1 视觉细化与内容保护验收
 
-日期：2026-11-24。对照本轮开始时的 2.0 提交 `8c32867eb764896705445818f91b140ccefafcb2`。版本：2.1（versionCode 4）。
+日期：2026-11-24。对照基线：本轮开始时的 2.0 版本。版本：2.1（versionCode 4）。
 
 ## 视觉调整
 
@@ -10,7 +10,7 @@
 
 继续应用 [Mobile App UI/UX Design skill](https://github.com/ceorkm/mobile-app-ui-design) 中的视觉层级、克制配色和组件一致性建议；没有采用增加文案、功能或流程的建议。Skill、下载材料、脚本中间结果和截图集中在本地忽略的工具或构建目录，不进入 Git。
 
-第一阶段源码提交：`f202db4`。第二阶段补充放大字体验收、完成独立复核并更新交付 APK。每次推送前均检查外层及工程内两份 README 和两份 `.gitignore`。
+第一阶段完成并推送视觉细化源码。第二阶段补充放大字体验收、完成独立复核并更新交付 APK。每次推送前均检查外层及工程内两份 README 和两份 `.gitignore`。
 
 ## 内容与功能保护
 
@@ -30,7 +30,8 @@
 ```bash
 ./scripts/check.sh test assembleDebug lintDebug
 python3 -m unittest discover -s scripts -p 'test_audit*.py' -v
-python3 scripts/audit_visual_only.py --baseline 8c32867 --version-name 2.1 --version-code 4
+# BASELINE_REF 由维护者在本地指定，不在文档中记录具体值。
+python3 scripts/audit_visual_only.py --baseline "$BASELINE_REF" --version-name 2.1 --version-code 4
 ```
 
 - `test assembleDebug lintDebug` 实际执行成功；Debug、Release 各 **77 项测试通过**，失败、错误和跳过均为 0。原有 75 项测试未修改，新增 2 项 130% 字号、320dp 窄屏的实际绘制验收。

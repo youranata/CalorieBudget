@@ -1,6 +1,6 @@
 # 2.0 视觉更新与独立审计
 
-日期：2026-11-24。对照基线：`42e9c78a4e7e21912e2b991ea072337f3fe511ec`。版本：2.0（versionCode 3）。
+日期：2026-11-24。对照基线：1.1 版本。版本：2.0（versionCode 3）。
 
 ## 视觉范围
 
@@ -29,7 +29,8 @@ App 五个页面和两种桌面小部件统一采用暖灰底色、深青绿重�
 ```bash
 ./scripts/check.sh test assembleDebug lintDebug
 python3 -m unittest discover -s scripts -p 'test_audit*.py' -v
-python3 scripts/audit_visual_only.py --baseline 42e9c78
+# BASELINE_REF 由维护者在本地指定，不在文档中记录具体值。
+python3 scripts/audit_visual_only.py --baseline "$BASELINE_REF"
 ```
 
 - Debug、Release 各 75 项测试，均 0 失败/错误/跳过：保留并运行原有 70 项，新增 5 项实际绘制的视觉验收。

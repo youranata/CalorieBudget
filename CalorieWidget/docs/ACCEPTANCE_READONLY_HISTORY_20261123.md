@@ -1,6 +1,6 @@
 # 当天明细与历史只读汇总：变更验收及独立审计
 
-日期：2026-11-23。变更前基线：`e4757bea51a27665488e7b9e501def33ad46ec2f`。应用版本 1.1（versionCode 2），Room 数据库版本 3。
+日期：2026-11-23。变更前基线：引入历史只读归档之前的版本。应用版本 1.1（versionCode 2），Room 数据库版本 3。
 
 ## 当前规则
 
@@ -47,7 +47,8 @@ Debug、Release 各 70 项测试全部通过，0 失败、0 错误、0 跳过；
 单独使用基线源码和独立 SQLite 数据账本复核，命令为：
 
 ```bash
-python3 scripts/audit_readonly_history.py --baseline e4757bea51a2
+# BASELINE_REF 由维护者在本地指定，不在文档中记录具体值。
+python3 scripts/audit_readonly_history.py --baseline "$BASELINE_REF"
 ```
 
 审计将改动限定为归档存储/迁移、日期写入限制、历史展示、统计数据来源适配、版本号、交付 APK 和相关文档/测试。
