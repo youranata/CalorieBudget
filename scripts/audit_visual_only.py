@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Independently compare the 2.0 visual refresh with its immutable Git baseline.
+"""Independently compare a visual refresh with its immutable Git baseline.
 
 This audit checks source scope and UI semantics, not whether a design is attractive.
 Rendering checks and the existing Android regression suite complement these checks.
@@ -35,9 +35,11 @@ DRAWABLES = {
 FIXED_ALLOWED = {
     "README.md", "CalorieWidget/README.md", APP + "build.gradle.kts",
     "CalorieWidget/docs/ACCEPTANCE_VISUAL_2_0.md",
+    "CalorieWidget/docs/ACCEPTANCE_VISUAL_2_1.md",
     "CalorieWidget/downloads/CalorieWidget-debug.apk",
     APP + "src/test/java/com/example/caloriewidget/VisualStyleAcceptanceTest.kt",
     APP + "src/test/java/com/example/caloriewidget/acceptance/VisualStyleAcceptanceTest.kt",
+    APP + "src/test/java/com/example/caloriewidget/acceptance/VisualRefinementAcceptanceTest.kt",
     "scripts/audit_visual_only.py", "scripts/test_audit_visual_only.py",
 }
 CONTAINERS = {"LinearLayout", "FrameLayout", "ScrollView", "RadioGroup",
@@ -296,7 +298,10 @@ def audit_color_selector(path: str, new: bytes) -> None:
     require(all(e.tag == "item" and set(e.attrib) <= allowed for e in root), f"Nonvisual color selector in {path}")
 
 
-def audit_files(original: dict[str, bytes], current: dict[str, bytes]) -> dict:
+def audit_files(original: dict[str, bytes], current: dict[str, bytes],
+                version_name: str = "2.0", version_code: int = 3) -> dict:
+    require(re.fullmatch(r"\d+(?:\.\d+)*", version_name) is not None and version_code > 0,
+            "Invalid expected delivery version")
     missing = sorted(set(original) - set(current))
     require(not missing, "Original files deleted: " + repr(missing))
     changed = sorted(path for path in set(original) | set(current) if original.get(path) != current.get(path))
@@ -309,10 +314,13 @@ def audit_files(original: dict[str, bytes], current: dict[str, bytes]) -> dict:
             require(old is not None and new.startswith(old), f"Existing README content changed: {path}")
         elif path == APP + "build.gradle.kts":
             require(old is not None, "Missing baseline app Gradle file")
-            expected = old.replace(b'versionCode = 2', b'versionCode = 3').replace(b'versionName = "1.1"', b'versionName = "2.0"')
-            require(old.count(b'versionCode = 2') == 1 and old.count(b'versionName = "1.1"') == 1,
-                    "Unexpected baseline app version")
-            require(new == expected, "App Gradle changes exceed versionCode 3 / versionName 2.0")
+            old_codes = re.findall(rb'(?m)^\s*versionCode = (\d+)$', old)
+            old_names = re.findall(rb'(?m)^\s*versionName = "([0-9.]+)"$', old)
+            require(len(old_codes) == len(old_names) == 1, "Unexpected baseline app version")
+            require(version_code > int(old_codes[0]), "Changed app Gradle requires a newer versionCode")
+            expected = re.sub(rb'versionCode = \d+', f'versionCode = {version_code}'.encode(), old, count=1)
+            expected = re.sub(rb'versionName = "[0-9.]+"', f'versionName = "{version_name}"'.encode(), expected, count=1)
+            require(new == expected, "App Gradle changes exceed the requested delivery version")
         elif path.startswith(RES + "layout/"):
             require(old is not None, f"An extra layout was introduced: {path}")
             layout_results[path] = audit_layout(path, old, new)
@@ -323,21 +331,23 @@ def audit_files(original: dict[str, bytes], current: dict[str, bytes]) -> dict:
         elif path.startswith(RES + "color/"):
             audit_color_selector(path, new)
     gradle = current.get(APP + "build.gradle.kts", b"")
-    require(b'versionCode = 3\n' in gradle and b'versionName = "2.0"\n' in gradle, "Delivery version must be 2.0 (code 3)")
+    require(f'versionCode = {version_code}\n'.encode() in gradle
+            and f'versionName = "{version_name}"\n'.encode() in gradle,
+            "Delivery version does not match the explicit audit target")
     return {
         "passed": True, "changed_files": changed,
         "unchanged_baseline_files": len(original) - len(set(changed) & set(original)),
         "nonvisual_source_manifest_database_strings_and_existing_tests": "byte_identical",
         "layout_semantics": layout_results,
         "gradle_except_version": "byte_identical",
-        "versionName": "2.0", "versionCode": 3,
+        "versionName": version_name, "versionCode": version_code,
         "readme_existing_content": "byte_identical_prefix",
         "scope": "Git baseline versus tracked and nonignored untracked working-tree files",
         "limitations": "Static audit; run regression tests and inspect rendered layouts separately.",
     }
 
 
-def audit_repository(root: Path, baseline: str) -> dict:
+def audit_repository(root: Path, baseline: str, version_name: str = "2.0", version_code: int = 3) -> dict:
     def git(*args: str) -> bytes:
         return subprocess.check_output(["git", "-C", str(root), *args], stderr=subprocess.PIPE)
     commit = git("rev-parse", baseline + "^{commit}").decode().strip()
@@ -357,7 +367,7 @@ def audit_repository(root: Path, baseline: str) -> dict:
                 executable = bool(file.stat().st_mode & 0o111)
                 require(executable == (original_modes[path] == "100755"), f"Original executable mode changed: {path}")
             current[path] = file.read_bytes()
-    result = audit_files(original, current)
+    result = audit_files(original, current, version_name, version_code)
     result["baseline"] = commit
     result["original_git_file_modes"] = "unchanged"
     return result
@@ -368,9 +378,11 @@ def main() -> int:
     parser.add_argument("--baseline", default="42e9c78", help="Git commit before the visual refresh")
     parser.add_argument("--repo", type=Path, default=ROOT, help="Repository to audit (also used by synthetic regression tests)")
     parser.add_argument("--output", type=Path, help="Optional JSON report")
+    parser.add_argument("--version-name", default="2.0", help="Required final application versionName")
+    parser.add_argument("--version-code", type=int, default=3, help="Required final application versionCode")
     args = parser.parse_args()
     try:
-        result = audit_repository(args.repo.resolve(), args.baseline)
+        result = audit_repository(args.repo.resolve(), args.baseline, args.version_name, args.version_code)
     except (AuditError, subprocess.CalledProcessError, OSError) as error:
         result = {"passed": False, "reason": str(error), "baseline": args.baseline}
     rendered = json.dumps(result, ensure_ascii=False, indent=2) + "\n"

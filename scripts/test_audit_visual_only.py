@@ -170,6 +170,20 @@ class VisualOnlyAuditTest(unittest.TestCase):
                 self.expect_rejection()
                 self.current[path] = old
 
+    def test_explicit_next_release_target_still_protects_gradle_and_content(self):
+        self.original[GRADLE] = self.current[GRADLE]
+        self.current[GRADLE] = self.original[GRADLE].replace(b'versionCode = 3', b'versionCode = 4').replace(b'"2.0"', b'"2.1"')
+        self.assertTrue(audit.audit_files(self.original, self.current, "2.1", 4)["passed"])
+        with self.assertRaises(audit.AuditError):
+            audit.audit_files(self.original, self.current)
+        for path, before, after in [(GRADLE, b'existing:1', b'existing:2'),
+                                    (LAYOUT, b'text="Save"', b'text="Changed"')]:
+            value = self.current[path]
+            self.current[path] = value.replace(before, after)
+            with self.assertRaises(audit.AuditError):
+                audit.audit_files(self.original, self.current, "2.1", 4)
+            self.current[path] = value
+
     def test_action_icon_only_color_can_change(self):
         path = RES + "drawable/ic_edit.xml"
         self.original[path] = ('<vector ' + A + '><path android:pathData="M1,2" android:fillColor="#111111"/></vector>').encode()
