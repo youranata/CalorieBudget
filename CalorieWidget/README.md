@@ -2,6 +2,8 @@
 
 CalorieWidget 是一个以桌面小部件为主要入口的本地热量预算应用。当天余额从 Room 明细计算，历史和图表使用每日目标与总摄入的只读归档，不单独保存余额。无账号、无食物数据库、无网络权限；自动云备份关闭。
 
+本项目采用 **[Apache License 2.0](../LICENSE)**，Copyright 2026 youranata。第三方组件许可及声明见 [NOTICE](../NOTICE) 和 [第三方声明](../THIRD_PARTY_NOTICES.md)。构建会将这三个文件复制进 APK 的 `assets/licenses/`；升级依赖或增加第三方资源时应同步更新第三方声明。
+
 ## 使用
 
 - 今日页展示剩余 kcal/kJ、已摄入热量、预算和按时间排序的记录。

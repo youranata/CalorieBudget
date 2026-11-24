@@ -48,6 +48,16 @@ android {
     }
 }
 
+// Ship the repository license and attributions with every APK and App Bundle.
+val syncLicenseAssets by tasks.registering(Sync::class) {
+    from(rootProject.projectDir.parentFile) {
+        include("LICENSE", "NOTICE", "THIRD_PARTY_NOTICES.md")
+    }
+    into(layout.buildDirectory.dir("generated/licenseAssets/licenses"))
+}
+android.sourceSets.getByName("main").assets.srcDir(layout.buildDirectory.dir("generated/licenseAssets"))
+tasks.named("preBuild").configure { dependsOn(syncLicenseAssets) }
+
 kapt {
     correctErrorTypes = true
     arguments { arg("room.schemaLocation", "$projectDir/schemas") }

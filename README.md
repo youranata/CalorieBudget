@@ -2,6 +2,8 @@
 
 以桌面小部件为主要入口的离线 Android 热量预算与摄入记录应用。Kotlin、原生 Views/XML、Room、Coroutines、AppWidget/RemoteViews、Canvas 图表，最低 Android 8.0（API 26）。无网络权限、无账号。
 
+本项目采用 **[Apache License 2.0](LICENSE)**，Copyright 2026 youranata。允许使用、修改、分发和商业使用，具体条件以协议原文为准；第三方组件保留各自许可，见 [NOTICE](NOTICE) 和 [第三方声明](THIRD_PARTY_NOTICES.md)。
+
 当天保留完整明细并支持删改；过往仅保留每日目标和总摄入，归档后只能查看。升级会将已有历史明细汇总后删除，当天记录保留。[变更验收与独立审计](CalorieWidget/docs/ACCEPTANCE_READONLY_HISTORY_20261123.md)。
 
 **[点击下载 APK（Debug）](https://github.com/youranata/CalorieBudget/raw/refs/heads/main/CalorieWidget/downloads/CalorieWidget-debug.apk)** · 支持 Android 8.0 及以上。下载后允许浏览器安装应用即可安装；若仓库为私有，需要先登录有访问权限的 GitHub 账号。
